@@ -7,6 +7,16 @@ import { fakeFetch } from '../../utils/fakeFetch';
 import { mockPlayers } from '../../mock/players';
 import './PlayerProfile.css';
 
+const getRandomBangladeshiCity = () => {
+    const cities = ['Dhaka', 'Chittagong', 'Sylhet', 'Khulna', 'Rajshahi', 'Barisal', 'Rangpur', 'Mymensingh'];
+    return cities[Math.floor(Math.random() * cities.length)];
+};
+
+const getRandomBangladeshiClub = () => {
+    const clubs = ['Bashundhara Kings', 'Dhaka Abahani', 'Mohammedan SC', 'Sheikh Russel KC', 'Chittagong Abahani', 'Sylhet FC', 'Khulna City FC'];
+    return clubs[Math.floor(Math.random() * clubs.length)];
+};
+
 export default function PlayerProfile() {
     const { id } = useParams();
     const [player, setPlayer] = useState(null);
@@ -20,32 +30,37 @@ export default function PlayerProfile() {
                 const mockPlayer = mockPlayers[parseInt(id) % mockPlayers.length] || mockPlayers[0];
                 const playerData = {
                     ...mockPlayer,
-                    birthday: '1995-03-20',
-                    birthplace: 'Manchester, England',
-                    height: '1.85m',
-                    weight: '78kg',
-                    strongFoot: 'Left',
-                    internationalCaps: 52,
-                    internationalGoals: 18,
+                    name: `${mockPlayer.first_name} ${mockPlayer.last_name}`,
+                    club: mockPlayer.current_club_name,
+                    age: new Date().getFullYear() - new Date(mockPlayer.date_of_birth).getFullYear(),
+                    jersey: Math.floor(Math.random() * 99) + 1,
+                    birthday: mockPlayer.date_of_birth,
+                    birthplace: getRandomBangladeshiCity(),
+                    height: `${(1.70 + Math.random() * 0.25).toFixed(2)}m`,
+                    weight: `${(65 + Math.random() * 20).toFixed(0)}kg`,
+                    strongFoot: ['Left', 'Right'][Math.floor(Math.random() * 2)],
+                    internationalCaps: Math.floor(Math.random() * 60) + 5,
+                    internationalGoals: mockPlayer.position === 'Forward' ? Math.floor(Math.random() * 35) + 2 : Math.floor(Math.random() * 12),
                     seasonStats: {
                         year: 2024,
-                        appearances: 28,
-                        goals: 12,
-                        assists: 5,
-                        yellowCards: 4,
-                        redCards: 0,
-                        minutes: 2340,
+                        appearances: Math.floor(Math.random() * 25) + 8,
+                        goals: mockPlayer.position === 'Forward' ? Math.floor(Math.random() * 15) + 3 : Math.floor(Math.random() * 5),
+                        assists: Math.floor(Math.random() * 10) + 1,
+                        yellowCards: Math.floor(Math.random() * 8),
+                        redCards: Math.floor(Math.random() * 2),
+                        minutes: Math.floor(Math.random() * 1500) + 500,
                     },
                     careerStats: {
-                        appearances: 287,
-                        goals: 98,
-                        assists: 34,
-                        yellowCards: 42,
-                        redCards: 2,
+                        appearances: Math.floor(Math.random() * 200) + 50,
+                        goals: mockPlayer.position === 'Forward' ? Math.floor(Math.random() * 100) + 15 : Math.floor(Math.random() * 30),
+                        assists: Math.floor(Math.random() * 50) + 5,
+                        yellowCards: Math.floor(Math.random() * 50) + 10,
+                        redCards: Math.floor(Math.random() * 5),
                     },
                     recentTransfers: [
-                        { from: 'Manchester United', to: 'Club', year: 2023, fee: '€85M' },
-                        { from: 'Liverpool', to: 'Manchester United', year: 2020, fee: '€52M' },
+                        { from: mockPlayer.current_club_name, to: 'Current Club', year: 2024, fee: '€' + (Math.floor(Math.random() * 500) + 50) + 'K' },
+                        { from: getRandomBangladeshiClub(), to: mockPlayer.current_club_name, year: 2023, fee: '€' + (Math.floor(Math.random() * 300) + 30) + 'K' },
+                        { from: getRandomBangladeshiClub(), to: getRandomBangladeshiClub(), year: 2022, fee: '€' + (Math.floor(Math.random() * 200) + 20) + 'K' },
                     ]
                 };
                 const data = await fakeFetch(playerData);
@@ -81,6 +96,9 @@ export default function PlayerProfile() {
                                     <p className="profile-position">{player.position}</p>
                                     <p className="profile-club">
                                         {player.club && <>Playing for <strong>{player.club}</strong></>}
+                                    </p>
+                                    <p className="profile-national">
+                                        <span className="flag">🇧🇩</span> Bangladesh National Team
                                     </p>
                                 </div>
                                 <div className="profile-stats-quick">
@@ -120,7 +138,7 @@ export default function PlayerProfile() {
                                             </div>
                                             <div className="info-item">
                                                 <span className="info-label">Nationality</span>
-                                                <span className="info-value">{player.national_team}</span>
+                                                <span className="info-value">🇧🇩 Bangladesh</span>
                                             </div>
                                             <div className="info-item">
                                                 <span className="info-label">Height</span>
@@ -190,6 +208,33 @@ export default function PlayerProfile() {
                                                 <div className="stat-icon">🔴</div>
                                                 <div className="stat-number">{player.careerStats.redCards}</div>
                                                 <div className="stat-name">Red Cards</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="profile-section">
+                                        <h2 className="section-title">Bangladesh Premier League</h2>
+                                        <div className="bpl-info">
+                                            <div className="bpl-card">
+                                                <div className="bpl-icon">🏆</div>
+                                                <div className="bpl-stat">
+                                                    <div className="bpl-label">Current Club</div>
+                                                    <div className="bpl-value">{player.club}</div>
+                                                </div>
+                                            </div>
+                                            <div className="bpl-card">
+                                                <div className="bpl-icon">🎯</div>
+                                                <div className="bpl-stat">
+                                                    <div className="bpl-label">BPL Goals</div>
+                                                    <div className="bpl-value">{player.seasonStats.goals + Math.floor(Math.random() * 5)}</div>
+                                                </div>
+                                            </div>
+                                            <div className="bpl-card">
+                                                <div className="bpl-icon">🎮</div>
+                                                <div className="bpl-stat">
+                                                    <div className="bpl-label">BPL Matches</div>
+                                                    <div className="bpl-value">{player.seasonStats.appearances + Math.floor(Math.random() * 8)}</div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
