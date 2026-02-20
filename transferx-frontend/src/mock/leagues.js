@@ -1,7 +1,7 @@
 export const mockLeagues = [
-  { league_id: 1, name: 'Premier League', country: 'England', club_count: 20 },
-  { league_id: 2, name: 'La Liga',        country: 'Spain',   club_count: 20 },
-  { league_id: 3, name: 'Bundesliga',     country: 'Germany', club_count: 18 },
-  { league_id: 4, name: 'Serie A',        country: 'Italy',   club_count: 20 },
-  { league_id: 5, name: 'MLS',            country: 'USA',     club_count: 29 },
+  { league_id: 1, name: 'Bangladesh Premier League',        country: 'Bangladesh', club_count: 13 },
+  { league_id: 2, name: 'Bangladesh Championship League',   country: 'Bangladesh', club_count: 11 },
+  { league_id: 3, name: 'Federation Cup',                   country: 'Bangladesh', club_count: 16 },
+  { league_id: 4, name: 'Independence Cup',                 country: 'Bangladesh', club_count: 12 },
+  { league_id: 5, name: 'Sheikh Kamal International Club Cup', country: 'Bangladesh', club_count: 8 },
 ];
