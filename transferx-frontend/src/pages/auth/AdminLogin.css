@@ -1,0 +1,120 @@
+.admin-login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: #06100d;
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 10px,
+    rgba(82, 183, 136, 0.02) 10px,
+    rgba(82, 183, 136, 0.02) 20px
+  );
+}
+
+.admin-login-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+}
+
+.admin-login-warning {
+  background: rgba(248, 113, 113, 0.12);
+  border-bottom: 1px solid rgba(248, 113, 113, 0.25);
+  padding: 12px 20px;
+  text-align: center;
+  color: var(--red);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.admin-login-body {
+  padding: 40px 32px;
+  text-align: center;
+}
+
+.admin-login-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--green-muted);
+  color: var(--green-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+}
+
+.admin-login-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+
+.admin-login-subtitle {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 32px;
+}
+
+.admin-login-form {
+  text-align: left;
+  margin-bottom: 20px;
+}
+
+.admin-login-submit {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, var(--green-primary), var(--green-dark));
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-inverse);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 24px;
+}
+
+.admin-login-submit:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(82, 183, 136, 0.4);
+}
+
+.admin-login-submit:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.admin-login-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top-color: var(--text-inverse);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+.admin-login-back {
+  display: inline-block;
+  color: var(--text-secondary);
+  font-size: 14px;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.admin-login-back:hover {
+  color: var(--green-primary);
+  text-decoration: underline;
+}

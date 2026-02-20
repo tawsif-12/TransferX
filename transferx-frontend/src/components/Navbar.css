@@ -1,0 +1,121 @@
+.navbar {
+  position: sticky;
+  top: 0;
+  height: 64px;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border);
+  z-index: 100;
+}
+
+.navbar-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  height: 100%;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  gap: 40px;
+}
+
+.navbar-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  font-family: 'Outfit', sans-serif;
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.navbar-logo:hover {
+  text-decoration: none;
+}
+
+.navbar-logo-icon {
+  font-size: 24px;
+}
+
+.navbar-logo-highlight {
+  color: var(--green-primary);
+}
+
+.navbar-links {
+  display: flex;
+  gap: 8px;
+  flex: 1;
+}
+
+.navbar-link {
+  padding: 8px 16px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 500;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.navbar-link:hover {
+  color: var(--green-primary);
+  text-decoration: none;
+}
+
+.navbar-link--active {
+  color: var(--green-primary);
+  border-bottom-color: var(--green-primary);
+}
+
+.navbar-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.navbar-user-name {
+  font-size: 14px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.navbar-user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--green-muted);
+  color: var(--green-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Outfit', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.navbar-logout {
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.navbar-logout:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--border-strong);
+  color: var(--text-primary);
+}
+
+@media (max-width: 768px) {
+  .navbar-links {
+    display: none;
+  }
+
+  .navbar-user-name {
+    display: none;
+  }
+}

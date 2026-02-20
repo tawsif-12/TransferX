@@ -1,0 +1,77 @@
+.transfer-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 12px;
+}
+
+.transfer-card:hover {
+  background: var(--bg-elevated);
+  border-color: var(--border-strong);
+}
+
+.transfer-card__player {
+  font-family: 'Outfit', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  min-width: 160px;
+}
+
+.transfer-card__route {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.transfer-card__club {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.transfer-card__arrow {
+  color: var(--green-primary);
+  font-size: 18px;
+}
+
+.transfer-card__fee {
+  font-family: 'Outfit', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--green-primary);
+  min-width: 80px;
+  text-align: right;
+}
+
+.transfer-card__date {
+  font-size: 13px;
+  color: var(--text-muted);
+  min-width: 100px;
+  text-align: right;
+}
+
+@media (max-width: 768px) {
+  .transfer-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .transfer-card__player,
+  .transfer-card__fee,
+  .transfer-card__date {
+    min-width: auto;
+    text-align: left;
+  }
+
+  .transfer-card__route {
+    width: 100%;
+  }
+}

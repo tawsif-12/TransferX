@@ -1,0 +1,56 @@
+.unauthorized-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+}
+
+.unauthorized-content {
+  max-width: 500px;
+}
+
+.unauthorized-icon {
+  font-size: 80px;
+  margin-bottom: 24px;
+  opacity: 0.3;
+}
+
+.unauthorized-title {
+  font-size: 72px;
+  font-weight: 800;
+  color: var(--red);
+  margin-bottom: 16px;
+}
+
+.unauthorized-subtitle {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+}
+
+.unauthorized-text {
+  font-size: 16px;
+  color: var(--text-muted);
+  margin-bottom: 32px;
+  line-height: 1.6;
+}
+
+.unauthorized-btn {
+  display: inline-block;
+  padding: 14px 32px;
+  background: linear-gradient(135deg, var(--green-primary), var(--green-dark));
+  color: var(--text-inverse);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.unauthorized-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(82, 183, 136, 0.4);
+}
