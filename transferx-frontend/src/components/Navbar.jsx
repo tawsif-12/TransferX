@@ -1,5 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { getInitials } from '../utils/formatters';
 import './Navbar.css';
 
@@ -7,6 +8,7 @@ export default function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
 
   const handleLogout = () => {
     logout();
@@ -26,40 +28,58 @@ export default function Navbar() {
         </Link>
 
         <div className="navbar-links">
-          <Link 
-            to="/players" 
+          <Link
+            to="/players"
             className={`navbar-link ${isActive('/players') ? 'navbar-link--active' : ''}`}
           >
             Players
           </Link>
-          <Link 
-            to="/clubs" 
+          <Link
+            to="/clubs"
             className={`navbar-link ${isActive('/clubs') ? 'navbar-link--active' : ''}`}
           >
             Clubs
           </Link>
-          <Link 
-            to="/transfers" 
+          <Link
+            to="/transfers"
             className={`navbar-link ${isActive('/transfers') ? 'navbar-link--active' : ''}`}
           >
             Transfers
           </Link>
-          <Link 
-            to="/agents" 
+          <Link
+            to="/agents"
             className={`navbar-link ${isActive('/agents') ? 'navbar-link--active' : ''}`}
           >
             Agents
           </Link>
         </div>
 
-        <div className="navbar-user">
-          <span className="navbar-user-name">{user?.name}</span>
-          <div className="navbar-user-avatar">
-            {user && getInitials(user.name.split(' ')[0], user.name.split(' ')[1] || '')}
-          </div>
-          <button onClick={handleLogout} className="navbar-logout">
-            Logout
+        <div className="navbar-controls">
+          <button
+            onClick={toggleTheme}
+            className="navbar-theme-toggle"
+            title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+          >
+            {theme === 'dark' ? '☀️' : '🌙'}
           </button>
+
+          <div className="navbar-user">
+            {user ? (
+              <>
+                <span className="navbar-user-name">{user?.name}</span>
+                <div className="navbar-user-avatar">
+                  {user && getInitials(user.name.split(' ')[0], user.name.split(' ')[1] || '')}
+                </div>
+                <button onClick={handleLogout} className="navbar-logout">
+                  Logout
+                </button>
+              </>
+            ) : (
+              <Link to="/login" className="navbar-login">
+                Login
+              </Link>
+            )}
+          </div>
         </div>
       </div>
     </nav>

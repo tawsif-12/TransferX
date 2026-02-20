@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 import ProtectedRoute from './components/ProtectedRoute';
 
 // Auth
@@ -8,6 +9,10 @@ import AdminLogin from './pages/auth/AdminLogin';
 
 // User pages
 import Dashboard from './pages/user/Dashboard';
+import UserProfile from './pages/user/UserProfile';
+
+// Player pages
+import PlayerProfile from './pages/player/PlayerProfile';
 
 // Misc
 import NotFound from './pages/misc/NotFound';
@@ -16,8 +21,8 @@ import Unauthorized from './pages/misc/Unauthorized';
 // Temporary placeholder component
 function PagePlaceholder({ title }) {
   return (
-    <div style={{ 
-      padding: '60px 24px', 
+    <div style={{
+      padding: '60px 24px',
       textAlign: 'center',
       minHeight: '100vh',
       display: 'flex',
@@ -38,43 +43,44 @@ function PagePlaceholder({ title }) {
 export default function App() {
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <Routes>
-          {/* ── Public ─────────────────────────────────────────── */}
-          <Route path="/login" element={<AuthPage defaultTab="login" />} />
-          <Route path="/register" element={<AuthPage defaultTab="register" />} />
-          <Route path="/admin/login" element={<AdminLogin />} />
+      <ThemeProvider>
+        <AuthProvider>
+          <Routes>
+            {/* ── Public ─────────────────────────────────────────── */}
+            <Route path="/login" element={<AuthPage defaultTab="login" />} />
+            <Route path="/register" element={<AuthPage defaultTab="register" />} />
+            <Route path="/admin/login" element={<AdminLogin />} />
 
-          {/* ── Protected: regular users ────────────────────────── */}
-          <Route element={<ProtectedRoute requiredRole="user" />}>
+            {/* ── Public: all users can access ────────────────────── */}
             <Route path="/" element={<Dashboard />} />
             <Route path="/players" element={<PagePlaceholder title="Players" />} />
-            <Route path="/players/:id" element={<PagePlaceholder title="Player Detail" />} />
+            <Route path="/players/:id" element={<PlayerProfile />} />
             <Route path="/clubs" element={<PagePlaceholder title="Clubs" />} />
             <Route path="/clubs/:id" element={<PagePlaceholder title="Club Detail" />} />
             <Route path="/transfers" element={<PagePlaceholder title="Transfers" />} />
             <Route path="/transfers/:id" element={<PagePlaceholder title="Transfer Detail" />} />
             <Route path="/agents" element={<PagePlaceholder title="Agents" />} />
             <Route path="/agents/:id" element={<PagePlaceholder title="Agent Detail" />} />
-          </Route>
+            <Route path="/users/:userId" element={<UserProfile />} />
 
-          {/* ── Protected: admin only ───────────────────────────── */}
-          <Route element={<ProtectedRoute requiredRole="admin" />}>
-            <Route path="/admin/dashboard" element={<PagePlaceholder title="Admin Dashboard" />} />
-            <Route path="/admin/players" element={<PagePlaceholder title="Manage Players" />} />
-            <Route path="/admin/clubs" element={<PagePlaceholder title="Manage Clubs" />} />
-            <Route path="/admin/leagues" element={<PagePlaceholder title="Manage Leagues" />} />
-            <Route path="/admin/agents" element={<PagePlaceholder title="Manage Agents" />} />
-            <Route path="/admin/transfers" element={<PagePlaceholder title="Manage Transfers" />} />
-            <Route path="/admin/contracts" element={<PagePlaceholder title="Manage Contracts" />} />
-            <Route path="/admin/transfer-history" element={<PagePlaceholder title="Transfer History" />} />
-          </Route>
+            {/* ── Admin routes (optional) ──────────────────────────── */}
+            <Route element={<ProtectedRoute requiredRole="admin" />}>
+              <Route path="/admin/dashboard" element={<PagePlaceholder title="Admin Dashboard" />} />
+              <Route path="/admin/players" element={<PagePlaceholder title="Manage Players" />} />
+              <Route path="/admin/clubs" element={<PagePlaceholder title="Manage Clubs" />} />
+              <Route path="/admin/leagues" element={<PagePlaceholder title="Manage Leagues" />} />
+              <Route path="/admin/agents" element={<PagePlaceholder title="Manage Agents" />} />
+              <Route path="/admin/transfers" element={<PagePlaceholder title="Manage Transfers" />} />
+              <Route path="/admin/contracts" element={<PagePlaceholder title="Manage Contracts" />} />
+              <Route path="/admin/transfer-history" element={<PagePlaceholder title="Transfer History" />} />
+            </Route>
 
-          {/* ── Fallbacks ───────────────────────────────────────── */}
-          <Route path="/unauthorized" element={<Unauthorized />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </AuthProvider>
+            {/* ── Fallbacks ───────────────────────────────────────── */}
+            <Route path="/unauthorized" element={<Unauthorized />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AuthProvider>
+      </ThemeProvider>
     </BrowserRouter>
   );
 }

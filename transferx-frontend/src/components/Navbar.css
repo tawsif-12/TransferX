@@ -67,6 +67,32 @@
   border-bottom-color: var(--green-primary);
 }
 
+.navbar-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.navbar-theme-toggle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  font-size: 18px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.navbar-theme-toggle:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--border-strong);
+}
+
 .navbar-user {
   display: flex;
   align-items: center;
@@ -108,6 +134,24 @@
   background: rgba(255, 255, 255, 0.08);
   border-color: var(--border-strong);
   color: var(--text-primary);
+}
+
+.navbar-login {
+  padding: 8px 16px;
+  background: var(--green-primary);
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-inverse);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  display: inline-block;
+}
+
+.navbar-login:hover {
+  background: var(--green-dark);
+  text-decoration: none;
 }
 
 @media (max-width: 768px) {
