@@ -1,0 +1,189 @@
+.transfers-page {
+    background: var(--bg-base);
+    color: var(--text-primary);
+    min-height: 100vh;
+}
+
+.page-header {
+    background: linear-gradient(135deg, var(--blue), var(--green-primary));
+    padding: 60px 24px;
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.page-title {
+    font-size: 48px;
+    font-weight: 700;
+    margin: 0 0 12px 0;
+    color: var(--text-inverse);
+}
+
+.page-subtitle {
+    font-size: 18px;
+    color: rgba(255, 255, 255, 0.8);
+    margin: 0;
+}
+
+.page-content {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 24px 60px 24px;
+}
+
+.transfers-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.transfer-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 24px;
+    transition: all 0.3s ease;
+}
+
+.transfer-card:hover {
+    border-color: var(--blue);
+    box-shadow: var(--shadow-glow);
+    transform: translateY(-2px);
+}
+
+.transfer-player {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    align-items: center;
+}
+
+.player-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--green-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+.player-info {
+    flex: 1;
+}
+
+.player-name {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0 0 4px 0;
+    color: var(--text-primary);
+}
+
+.transfer-type {
+    font-size: 12px;
+    background: var(--green-muted);
+    color: var(--green-primary);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.transfer-flow {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+}
+
+.transfer-club {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    flex: 1;
+}
+
+.club-badge {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--bg-card);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.transfer-club .label {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.transfer-club .club-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.transfer-arrow {
+    font-size: 24px;
+    color: var(--blue);
+    font-weight: 700;
+}
+
+.transfer-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 24px;
+}
+
+.detail {
+    display: flex;
+    flex-direction: column;
+}
+
+.detail .label {
+    font-size: 12px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.detail .value {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--green-primary);
+}
+
+@media (max-width: 768px) {
+    .transfer-flow {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .transfer-arrow {
+        transform: rotate(90deg);
+    }
+
+    .page-header {
+        padding: 40px 20px;
+    }
+
+    .page-title {
+        font-size: 32px;
+    }
+
+    .page-subtitle {
+        font-size: 16px;
+    }
+}

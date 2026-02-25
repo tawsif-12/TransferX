@@ -14,6 +14,12 @@ import UserProfile from './pages/user/UserProfile';
 // Player pages
 import PlayerProfile from './pages/player/PlayerProfile';
 
+// Common pages
+import PlayersPage from './pages/common/PlayersPage';
+import ClubsPage from './pages/common/ClubsPage';
+import TransfersPage from './pages/common/TransfersPage';
+import AgentsPage from './pages/common/AgentsPage';
+
 // Misc
 import NotFound from './pages/misc/NotFound';
 import Unauthorized from './pages/misc/Unauthorized';
@@ -53,13 +59,13 @@ export default function App() {
 
             {/* ── Public: all users can access ────────────────────── */}
             <Route path="/" element={<Dashboard />} />
-            <Route path="/players" element={<PagePlaceholder title="Players" />} />
+            <Route path="/players" element={<PlayersPage />} />
             <Route path="/players/:id" element={<PlayerProfile />} />
-            <Route path="/clubs" element={<PagePlaceholder title="Clubs" />} />
+            <Route path="/clubs" element={<ClubsPage />} />
             <Route path="/clubs/:id" element={<PagePlaceholder title="Club Detail" />} />
-            <Route path="/transfers" element={<PagePlaceholder title="Transfers" />} />
+            <Route path="/transfers" element={<TransfersPage />} />
             <Route path="/transfers/:id" element={<PagePlaceholder title="Transfer Detail" />} />
-            <Route path="/agents" element={<PagePlaceholder title="Agents" />} />
+            <Route path="/agents" element={<AgentsPage />} />
             <Route path="/agents/:id" element={<PagePlaceholder title="Agent Detail" />} />
             <Route path="/users/:userId" element={<UserProfile />} />
 
