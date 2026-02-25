@@ -1,0 +1,357 @@
+// This is your Prisma schema file for TransferX
+// Documentation: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  PLAYER
+  AGENT
+  CLUB_MANAGER
+  ADMIN
+}
+
+enum PlayerPosition {
+  GOALKEEPER
+  DEFENDER
+  MIDFIELDER
+  FORWARD
+}
+
+enum TransferStatus {
+  PENDING
+  UNDER_REVIEW
+  NEGOTIATING
+  ACCEPTED
+  REJECTED
+  COMPLETED
+}
+
+enum DocumentStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum VisaStatus {
+  APPROVED
+  DENIED
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  fullName  String
+  role      UserRole @default(PLAYER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Player-specific fields
+  playerProfile         PlayerProfile?
+  
+  // Agent-specific fields
+  agentProfile          AgentProfile?
+  
+  // Club Manager fields
+  managedClub           Club?
+  
+  // Relations
+  documents             PlayerDocument[]
+  transferRequests      TransferRequest[]
+  clubRatings           ClubRating[]
+  agentRatings          AgentRating[]
+
+  @@index([email])
+}
+
+model PlayerProfile {
+  id              Int             @id @default(autoincrement())
+  userId          Int             @unique
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  position        PlayerPosition
+  nationality     String
+  dateOfBirth     DateTime?
+  height          Float?          // in cm
+  weight          Float?          // in kg
+  preferredFoot   String?         // LEFT, RIGHT, BOTH
+  currentClubId   Int?
+  currentClub     Club?           @relation(fields: [currentClubId], references: [id])
+  
+  // Stats for tier calculation
+  marketValue     Float           @default(0) // in millions
+  goalsScored     Int             @default(0)
+  assists         Int             @default(0)
+  appearances     Int             @default(0)
+  rating          Float           @default(0) // Overall rating 0-10
+  
+  // Additional info
+  bio             String?         @db.Text
+  
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  // Relations
+  agents          PlayerAgent[]
+
+  @@index([currentClubId])
+  @@index([position])
+}
+
+model AgentProfile {
+  id              Int      @id @default(autoincrement())
+  userId          Int      @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  agency          String
+  licenseNumber   String   @unique
+  yearsExperience Int      @default(0)
+  specialization  String?  // e.g., "European Transfers", "Youth Players"
+  
+  // Stats
+  successfulDeals Int      @default(0)
+  averageRating   Float    @default(0)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  players         PlayerAgent[]
+  ratings         AgentRating[]
+}
+
+model PlayerAgent {
+  id              Int          @id @default(autoincrement())
+  playerId        Int
+  agentId         Int
+  
+  player          PlayerProfile @relation(fields: [playerId], references: [id])
+  agent           AgentProfile  @relation(fields: [agentId], references: [id])
+  
+  startDate       DateTime     @default(now())
+  endDate         DateTime?
+  isActive        Boolean      @default(true)
+
+  @@unique([playerId, agentId])
+  @@index([playerId])
+  @@index([agentId])
+}
+
+model League {
+  id          Int      @id @default(autoincrement())
+  name        String
+  country     String
+  tier        Int      @default(1) // 1 = Top tier, 2 = Mid tier, 3 = Lower tier
+  logoUrl     String?
+  description String?  @db.Text
+  isActive    Boolean  @default(true)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  clubs       Club[]
+
+  @@index([country])
+  @@index([tier])
+}
+
+model Club {
+  id              Int      @id @default(autoincrement())
+  name            String
+  leagueId        Int
+  league          League   @relation(fields: [leagueId], references: [id])
+  
+  country         String
+  city            String?
+  founded         Int?
+  stadium         String?
+  capacity        Int?
+  logoUrl         String?
+  description     String?  @db.Text
+  
+  // Manager/Owner
+  managerId       Int?     @unique
+  manager         User?    @relation(fields: [managerId], references: [id])
+  
+  isActive        Boolean  @default(true)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  players         PlayerProfile[]
+  transferOpportunities TransferOpportunity[]
+  transferRequests      TransferRequest[]
+  ratings               ClubRating[]
+
+  @@index([leagueId])
+  @@index([country])
+}
+
+model TransferOpportunity {
+  id              Int      @id @default(autoincrement())
+  clubId          Int
+  club            Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  
+  position        PlayerPosition
+  minRating       Float    @default(0)
+  maxBudget       Float    // in millions
+  description     String   @db.Text
+  
+  requirements    String?  @db.Text // JSON string or text description
+  benefits        String?  @db.Text
+  
+  isActive        Boolean  @default(true)
+  startDate       DateTime @default(now())
+  endDate         DateTime?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([clubId])
+  @@index([position])
+  @@index([isActive])
+}
+
+model PlayerDocument {
+  id              Int            @id @default(autoincrement())
+  userId          Int
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  documentType    String         // CONTRACT, MEDICAL, PASSPORT, CERTIFICATE, etc.
+  fileName        String
+  filePath        String
+  fileSize        Int?
+  mimeType        String?
+  
+  status          DocumentStatus @default(PENDING)
+  verifiedBy      Int?           // Admin user ID
+  verificationNote String?       @db.Text
+  verifiedAt      DateTime?
+  
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([userId])
+  @@index([status])
+}
+
+model ApplicationStatus {
+  id          Int      @id @default(autoincrement())
+  status      String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+}
+
+model TransferRequest {
+  id              Int               @id @default(autoincrement())
+  userId          Int
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  clubId          Int
+  club            Club              @relation(fields: [clubId], references: [id])
+  
+  leagueId        Int?              // Target league
+  
+  // Transfer details
+  proposedFee     Float?            // in millions
+  proposedSalary  Float?            // annual salary in millions
+  contractLength  Int?              // years
+  transferWindow  String?           // SUMMER, WINTER
+  
+  // Application info
+  status          TransferStatus    @default(PENDING)
+  coverLetter     String?           @db.Text
+  
+  // Admin notes
+  adminNotes      String?           @db.Text
+  reviewedBy      Int?              // Admin user ID
+  reviewedAt      DateTime?
+  
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  // Relations
+  outcome         TransferOutcome?
+
+  @@index([userId])
+  @@index([clubId])
+  @@index([status])
+}
+
+model TransferOutcome {
+  id                  Int             @id @default(autoincrement())
+  transferRequestId   Int             @unique
+  transferRequest     TransferRequest @relation(fields: [transferRequestId], references: [id], onDelete: Cascade)
+  
+  approved            Boolean
+  finalFee            Float?          // in millions
+  finalSalary         Float?          // annual
+  contractYears       Int?
+  
+  // Outcome details
+  outcomeDate         DateTime        @default(now())
+  notes               String?         @db.Text
+  
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+
+  @@index([transferRequestId])
+}
+
+model ClubRating {
+  id                  Int             @id @default(autoincrement())
+  userId              Int
+  user                User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  clubId              Int
+  club                Club            @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  
+  transferRequestId   Int?            // Optional link to transfer request
+  
+  rating              Float           // 1-5 stars
+  review              String?         @db.Text
+  
+  // Rating aspects
+  professionalism     Float?          // 1-5
+  facilities          Float?          // 1-5
+  communication       Float?          // 1-5
+  
+  isAnonymous         Boolean         @default(false)
+  isApproved          Boolean         @default(true) // Admin can moderate
+  
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+
+  @@unique([userId, clubId, transferRequestId])
+  @@index([clubId])
+  @@index([userId])
+}
+
+model AgentRating {
+  id              Int          @id @default(autoincrement())
+  userId          Int
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  agentId         Int
+  agent           AgentProfile @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  
+  rating          Float        // 1-5 stars
+  review          String?      @db.Text
+  
+  isApproved      Boolean      @default(true)
+  
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@unique([userId, agentId])
+  @@index([agentId])
+  @@index([userId])
+}
