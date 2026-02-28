@@ -94,9 +94,63 @@ transferx-backend/
 ### Prerequisites
 
 - Node.js 18+ 
-- MySQL or SQL Server database
+- **Microsoft SQL Server or SQL Server Express** (Current Configuration)
+- Alternative: MySQL or PostgreSQL (requires schema change)
 
 ### Installation
+
+📖 **For MSSQL Setup**: Follow the comprehensive [MSSQL_SETUP_GUIDE.md](MSSQL_SETUP_GUIDE.md) with step-by-step instructions and troubleshooting.
+
+**Quick Setup:**
+
+```bash
+# 1. Create database
+sqlcmd -S localhost\SQLEXPRESS -E -Q "CREATE DATABASE transferx"
+
+# 2. Install dependencies
+cd transferx-backend
+npm install
+
+# 3. Configure environment
+cp .env.example .env
+# Edit .env and set DATABASE_URL
+
+# 4. Generate Prisma Client
+npx prisma generate
+
+# 5. Create database tables
+npx prisma db push
+
+# 6. Seed with sample data
+node prisma/seed.js
+
+# 7. Start development server
+npm run dev
+```
+
+### Verify Setup
+
+```powershell
+# Run verification script
+.\verify-mssql-setup.ps1
+
+# Or manually test
+curl http://localhost:3001/api
+```
+
+---
+
+## 📚 Documentation
+
+| Document | Description |
+|----------|-------------|
+| **[MSSQL_SETUP_GUIDE.md](MSSQL_SETUP_GUIDE.md)** | Complete SQL Server setup guide with troubleshooting |
+| **[DATABASE_TABLES_REFERENCE.md](DATABASE_TABLES_REFERENCE.md)** | Detailed reference of all 9 database tables |
+| **[QUICK_REFERENCE.md](QUICK_REFERENCE.md)** | Quick command reference cheat sheet |
+| **[API_REFERENCE.md](API_REFERENCE.md)** | Complete API endpoint documentation |
+| **[SETUP.md](SETUP.md)** | Detailed feature documentation |
+
+---
 
 1. **Clone and navigate to backend directory**
    ```bash
