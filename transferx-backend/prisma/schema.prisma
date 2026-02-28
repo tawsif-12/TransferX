@@ -1,4 +1,4 @@
-// Prisma schema file for TransferX with MSSQL
+// Prisma schema file for TransferX with SQL Server
 // Documentation: https://pris.ly/d/prisma-schema
 
 generator client {
