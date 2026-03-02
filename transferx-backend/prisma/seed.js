@@ -1,10 +1,51 @@
 const { PrismaClient } = require('@prisma/client');
+const bcrypt = require('bcryptjs');
 
 const prisma = new PrismaClient();
 
 async function main() {
   try {
     console.log('🌱 Starting seed data insertion...');
+
+    // Create Admin User
+    const adminPassword = await bcrypt.hash('admin123', 10);
+    const adminUser = await prisma.user.create({
+      data: {
+        email: 'admin@transferx.com',
+        password: adminPassword,
+        fullName: 'Admin User',
+        role: 'ADMIN',
+      },
+    });
+    console.log('✓ Admin user created:', { id: adminUser.id, email: adminUser.email, role: adminUser.role });
+
+    // Create Regular User (Player)
+    const userPassword = await bcrypt.hash('user123', 10);
+    const regularUser = await prisma.user.create({
+      data: {
+        email: 'user@transferx.com',
+        password: userPassword,
+        fullName: 'John Doe',
+        role: 'PLAYER',
+        playerProfile: {
+          create: {
+            position: 'FORWARD',
+            nationality: 'England',
+            dateOfBirth: new Date('1995-05-15'),
+            height: 180,
+            weight: 75,
+            preferredFoot: 'Right',
+            marketValue: 5000000,
+            goalsScored: 25,
+            assists: 10,
+            appearances: 50,
+            rating: 7.5,
+            bio: 'Rising star in English football',
+          },
+        },
+      },
+    });
+    console.log('✓ Regular user created:', { id: regularUser.id, email: regularUser.email, role: regularUser.role });
 
     // Create League
     const league = await prisma.league.create({

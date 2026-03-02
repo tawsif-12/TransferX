@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import axiosClient from '../../api/axiosClient';
 import FormInput from '../../components/FormInput';
 import PasswordInput from '../../components/PasswordInput';
 import PasswordStrengthBar from '../../components/PasswordStrengthBar';
@@ -41,21 +42,6 @@ export default function AuthPage({ defaultTab = 'login' }) {
     setSignupErrors({});
   };
 
-  const mockLogin = async ({ email, password }) => {
-    await new Promise(r => setTimeout(r, 1200));
-    if (email === 'admin@transferx.com' && password === 'admin123')
-      return { token: 'mock-admin-jwt', role: 'admin', user: { name: 'Admin User', email } };
-    if (email === 'user@transferx.com' && password === 'user123')
-      return { token: 'mock-user-jwt', role: 'user', user: { name: 'John Doe', email } };
-    throw new Error('Invalid email or password');
-  };
-
-  const mockRegister = async ({ fullName, email }) => {
-    await new Promise(r => setTimeout(r, 1400));
-    if (email === 'taken@transferx.com') throw new Error('Email already registered');
-    return { token: 'mock-new-jwt', role: 'user', user: { name: fullName, email } };
-  };
-
   const handleLogin = async (e) => {
     e.preventDefault();
     setGlobalError('');
@@ -68,20 +54,22 @@ export default function AuthPage({ defaultTab = 'login' }) {
 
     setLoading(true);
     try {
-      // REAL API (uncomment when backend ready):
-      // const res = await axiosClient.post('/auth/login', { email: loginEmail, password: loginPassword });
-      // const { token, role, user } = res.data;
+      const res = await axiosClient.post('/auth/login', { 
+        email: loginEmail, 
+        password: loginPassword 
+      });
       
-      const { token, role, user } = await mockLogin({ email: loginEmail, password: loginPassword });
+      const { token, role, user } = res.data.data;
       setSuccess(`Welcome back, ${user.name.split(' ')[0]}!`);
       auth.login(token, role, user);
       
       setTimeout(() => {
-        if (role === 'admin') navigate('/admin/dashboard');
+        if (role === 'ADMIN') navigate('/admin/dashboard');
         else navigate('/');
       }, 1500);
     } catch (err) {
-      setGlobalError(err.message || 'Login failed');
+      const errorMessage = err.response?.data?.error || err.message || 'Login failed';
+      setGlobalError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -104,11 +92,13 @@ export default function AuthPage({ defaultTab = 'login' }) {
 
     setLoading(true);
     try {
-      // REAL API (uncomment when backend ready):
-      // const res = await axiosClient.post('/auth/register', { fullName: signupName, email: signupEmail, password: signupPassword });
-      // const { token, role, user } = res.data;
+      const res = await axiosClient.post('/auth/signup', { 
+        fullName: signupName, 
+        email: signupEmail, 
+        password: signupPassword 
+      });
       
-      const { token, role, user } = await mockRegister({ fullName: signupName, email: signupEmail });
+      const { token, role, user } = res.data.data;
       setSuccess(`Welcome to TransferX, ${user.name.split(' ')[0]}!`);
       auth.login(token, role, user);
       
@@ -116,7 +106,8 @@ export default function AuthPage({ defaultTab = 'login' }) {
         navigate('/');
       }, 1500);
     } catch (err) {
-      setGlobalError(err.message || 'Registration failed');
+      const errorMessage = err.response?.data?.error || err.message || 'Registration failed';
+      setGlobalError(errorMessage);
     } finally {
       setLoading(false);
     }

@@ -13,17 +13,55 @@ datasource db {
 // MODELS
 
 model User {
-  user_id       Int       @id @default(autoincrement())
+  id            Int       @id @default(autoincrement())
   email         String    @unique
-  password_hash String
-  first_name    String?
-  last_name     String?
-  role          String    @default("FAN") // ADMIN, AGENT, CLUB_MANAGER, FAN
+  password      String
+  fullName      String?
+  role          String    @default("PLAYER") // PLAYER, AGENT, CLUB_MANAGER, ADMIN
   created_at    DateTime  @default(now())
   updated_at    DateTime  @updatedAt
 
+  playerProfile PlayerProfile?
+  agentProfile  AgentProfile?
+
   @@index([email])
   @@index([role])
+  @@map("User")
+}
+
+model PlayerProfile {
+  id              Int       @id @default(autoincrement())
+  userId          Int       @unique
+  position        String    // GOALKEEPER, DEFENDER, MIDFIELDER, FORWARD
+  nationality     String?
+  dateOfBirth     DateTime?
+  height          Float?
+  weight          Float?
+  preferredFoot   String?
+  currentClubId   Int?
+  marketValue     Float     @default(0)
+  goalsScored     Int       @default(0)
+  assists         Int       @default(0)
+  appearances     Int       @default(0)
+  rating          Float     @default(0)
+  bio             String?
+
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  currentClub     Club?     @relation(fields: [currentClubId], references: [club_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("PlayerProfile")
+}
+
+model AgentProfile {
+  id              Int       @id @default(autoincrement())
+  userId          Int       @unique
+  agency          String?
+  licenseNumber   String?
+  yearsExperience Int       @default(0)
+
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("AgentProfile")
 }
 
 model League {
@@ -46,6 +84,7 @@ model Club {
   league       League  @relation(fields: [league_id], references: [league_id], onDelete: NoAction, onUpdate: NoAction)
 
   players      Player[]
+  playerProfiles PlayerProfile[]
   transfers_from Transfer[] @relation("FromClub")
   transfers_to Transfer[] @relation("ToClub")
   contracts    Contract[]

@@ -5,6 +5,10 @@ import { generateToken } from '@/lib/auth';
 import { successResponse, errorResponse, handleRouteError } from '@/lib/response';
 import { validateData, loginSchema } from '@/lib/validation';
 
+export async function OPTIONS(request) {
+  return new NextResponse(null, { status: 200 });
+}
+
 export async function POST(request) {
   try {
     const body = await request.json();
@@ -23,7 +27,6 @@ export async function POST(request) {
       include: {
         playerProfile: true,
         agentProfile: true,
-        managedClub: true,
       },
     });
 
@@ -44,8 +47,13 @@ export async function POST(request) {
     const token = generateToken(user.id, user.role, user.email);
 
     return successResponse({
-      user: userWithoutPassword,
       token,
+      role: user.role,
+      user: {
+        name: user.fullName || user.email,
+        email: user.email,
+        ...userWithoutPassword
+      },
     });
   } catch (error) {
     return handleRouteError(error);

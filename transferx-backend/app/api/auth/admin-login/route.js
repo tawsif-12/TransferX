@@ -1,33 +1,62 @@
 import { NextResponse } from 'next/server';
+import bcrypt from 'bcryptjs';
+import prisma from '@/lib/prisma';
 import { generateToken } from '@/lib/auth';
-import { successResponse, errorResponse } from '@/lib/response';
+import { successResponse, errorResponse, handleRouteError } from '@/lib/response';
+import { validateData, loginSchema } from '@/lib/validation';
+
+export async function OPTIONS(request) {
+  return new NextResponse(null, { status: 200 });
+}
 
 /**
  * POST /api/auth/admin-login
- * Simple admin login for testing (no password verification needed)
- * Used to get JWT token for admin routes
+ * Admin-only login endpoint with role verification
  */
 export async function POST(request) {
-    try {
-        const body = await request.json();
-        const { email } = body;
-
-        if (!email) {
-            return errorResponse('Email is required', 400);
-        }
-
-        // For testing purposes, generate a token with ADMIN role
-        // In production, you would verify credentials against a database
-        const token = generateToken(Math.random(), 'ADMIN', email);
-
-        return successResponse({
-            token,
-            role: 'ADMIN',
-            email,
-            message: 'Admin token generated successfully. Use this token in Authorization header as: Bearer <token>',
-        });
-    } catch (error) {
-        console.error('Admin login error:', error);
-        return errorResponse('Internal server error', 500);
+  try {
+    const body = await request.json();
+    
+    // Validate input
+    const validation = validateData(loginSchema, body);
+    if (!validation.success) {
+      return errorResponse(validation.errors, 400);
     }
+
+    const { email, password } = validation.data;
+
+    // Find user by email
+    const user = await prisma.user.findUnique({
+      where: { email: email.toLowerCase() },
+    });
+
+    if (!user) {
+      return errorResponse('Invalid email or password', 401);
+    }
+
+    // Check if user is admin
+    if (user.role !== 'ADMIN') {
+      return errorResponse('Access denied. Admin privileges required.', 401);
+    }
+
+    // Verify password
+    const isValidPassword = await bcrypt.compare(password, user.password);
+    if (!isValidPassword) {
+      return errorResponse('Invalid email or password', 401);
+    }
+
+    // Generate JWT token with shorter expiry for admin (8 hours)
+    const token = generateToken(user.id, user.role, user.email, '8h');
+
+    return successResponse({
+      token,
+      role: user.role,
+      user: {
+        name: user.fullName || user.email,
+        email: user.email,
+      },
+    });
+  } catch (error) {
+    return handleRouteError(error);
+  }
 }

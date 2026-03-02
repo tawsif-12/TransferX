@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import {Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import axiosClient from '../../api/axiosClient';
 import FormInput from '../../components/FormInput';
 import PasswordInput from '../../components/PasswordInput';
 import ErrorBanner from '../../components/ErrorBanner';
@@ -16,13 +17,6 @@ export default function AdminLogin() {
   const [errors, setErrors] = useState({});
   const [globalError, setGlobalError] = useState('');
   const [loading, setLoading] = useState(false);
-
-  const mockAdminLogin = async ({ email, password }) => {
-    await new Promise(r => setTimeout(r, 1000));
-    if (email === 'admin@transferx.com' && password === 'admin123')
-      return { token: 'mock-admin-jwt', role: 'admin', user: { name: 'Admin User', email } };
-    throw new Error('Access denied. Invalid admin credentials.');
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -41,15 +35,13 @@ export default function AdminLogin() {
 
     setLoading(true);
     try {
-      // REAL API (uncomment when backend ready):
-      // const res = await axiosClient.post('/auth/admin/login', { email, password });
-      // const { token, role, user } = res.data;
-
-      const { token, role, user } = await mockAdminLogin({ email, password });
+      const res = await axiosClient.post('/auth/admin-login', { email, password });
+      const { token, role, user } = res.data.data;
       auth.login(token, role, user);
       navigate('/admin/dashboard');
     } catch (err) {
-      setGlobalError(err.message || 'Login failed');
+      const errorMessage = err.response?.data?.error || err.message || 'Login failed';
+      setGlobalError(errorMessage);
     } finally {
       setLoading(false);
     }

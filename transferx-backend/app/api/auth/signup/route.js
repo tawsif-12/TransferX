@@ -5,6 +5,10 @@ import { generateToken } from '@/lib/auth';
 import { successResponse, errorResponse, handleRouteError } from '@/lib/response';
 import { validateData, signupSchema } from '@/lib/validation';
 
+export async function OPTIONS(request) {
+  return new NextResponse(null, { status: 200 });
+}
+
 export async function POST(request) {
   try {
     const body = await request.json();
@@ -67,7 +71,7 @@ export async function POST(request) {
         email: true,
         fullName: true,
         role: true,
-        createdAt: true,
+        created_at: true,
       },
     });
 
@@ -76,8 +80,13 @@ export async function POST(request) {
 
     return successResponse(
       {
-        user,
         token,
+        role: user.role,
+        user: {
+          name: user.fullName,
+          email: user.email,
+          ...user
+        },
       },
       201
     );

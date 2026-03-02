@@ -5,11 +5,11 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 /**
  * Generate JWT token for user
  */
-export function generateToken(userId, role, email) {
+export function generateToken(userId, role, email, expiresIn = '7d') {
   return jwt.sign(
     { userId, role, email },
     JWT_SECRET,
-    { expiresIn: '7d' }
+    { expiresIn }
   );
 }
 
