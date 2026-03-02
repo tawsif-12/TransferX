@@ -1,0 +1,411 @@
+.admin-dashboard {
+    background: var(--bg-base);
+    min-height: 100vh;
+    color: var(--text-primary);
+}
+
+.admin-header {
+    background: linear-gradient(135deg, var(--green-primary), var(--green-dark));
+    padding: 60px 24px;
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.admin-title {
+    font-size: 48px;
+    font-weight: 700;
+    margin: 0 0 12px 0;
+    color: var(--text-inverse);
+}
+
+.admin-subtitle {
+    font-size: 18px;
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0;
+}
+
+.admin-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 24px 60px 24px;
+}
+
+.stats-section,
+.management-section,
+.recent-section,
+.expiring-section,
+.clubs-section {
+    margin-bottom: 48px;
+}
+
+.section-title {
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0 0 24px 0;
+    color: var(--text-primary);
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 12px;
+}
+
+/* Stats Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.stat-card {
+    background: var(--bg-surface);
+    border: 2px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    border-color: var(--green-primary);
+    box-shadow: var(--shadow-glow);
+    transform: translateY(-4px);
+}
+
+.stat-card.highlight {
+    background: linear-gradient(135deg, var(--green-light), var(--bg-surface));
+    border-color: var(--green-primary);
+}
+
+.stat-card.warning {
+    background: linear-gradient(135deg, #fef3cd, var(--bg-surface));
+    border-color: var(--yellow);
+}
+
+.stat-icon {
+    font-size: 40px;
+    margin-bottom: 12px;
+}
+
+.stat-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--green-primary);
+    margin: 8px 0;
+}
+
+.stat-label {
+    font-size: 13px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
+/* Management Grid */
+.management-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+}
+
+.management-card {
+    background: var(--bg-surface);
+    border: 2px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 28px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.management-card:hover {
+    border-color: var(--green-primary);
+    box-shadow: var(--shadow-glow);
+    transform: translateY(-4px);
+}
+
+.management-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+}
+
+.management-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0 0 12px 0;
+    color: var(--text-primary);
+}
+
+.management-desc {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin: 0 0 20px 0;
+    line-height: 1.5;
+}
+
+.management-btn {
+    background: var(--green-primary);
+    color: var(--text-inverse);
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.management-btn:hover {
+    background: var(--green-dark);
+}
+
+/* Transfers List */
+.transfers-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.transfer-item {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    transition: all 0.2s ease;
+}
+
+.transfer-item:hover {
+    border-color: var(--green-primary);
+    box-shadow: var(--shadow-card);
+}
+
+.transfer-player {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 200px;
+}
+
+.player-icon {
+    font-size: 32px;
+}
+
+.player-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.player-position {
+    font-size: 12px;
+    color: var(--green-primary);
+    font-weight: 600;
+}
+
+.transfer-details {
+    flex: 1;
+}
+
+.transfer-route {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.club-name {
+    font-size: 14px;
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.arrow {
+    color: var(--green-primary);
+    font-weight: 700;
+}
+
+.transfer-meta {
+    display: flex;
+    gap: 16px;
+    font-size: 12px;
+}
+
+.transfer-type {
+    background: var(--green-muted);
+    color: var(--green-dark);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+.transfer-fee {
+    color: var(--green-primary);
+    font-weight: 700;
+}
+
+.transfer-date {
+    color: var(--text-muted);
+}
+
+/* Contracts List */
+.contracts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.contract-item {
+    background: var(--bg-surface);
+    border: 1px solid var(--yellow);
+    border-left: 4px solid var(--yellow);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.contract-player {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.contract-end {
+    text-align: right;
+}
+
+.end-label {
+    display: block;
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+.end-date {
+    display: block;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--yellow);
+}
+
+/* Transfer Stats */
+.transfer-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+}
+
+.transfer-stat-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 20px;
+    text-align: center;
+}
+
+.stat-type {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--green-primary);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+
+.stat-count {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+}
+
+/* Clubs Table */
+.clubs-table {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.club-row {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    transition: all 0.2s ease;
+}
+
+.club-row:hover {
+    border-color: var(--green-primary);
+    box-shadow: var(--shadow-card);
+}
+
+.club-rank {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--green-primary);
+    min-width: 40px;
+}
+
+.club-row .club-name {
+    flex: 1;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.club-stat {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.stat-label {
+    color: var(--text-muted);
+    margin-right: 4px;
+}
+
+.club-total {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--green-primary);
+    background: var(--green-muted);
+    padding: 6px 12px;
+    border-radius: 6px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .admin-title {
+        font-size: 32px;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .management-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .transfer-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .transfer-player {
+        min-width: auto;
+    }
+
+    .club-row {
+        flex-wrap: wrap;
+    }
+}

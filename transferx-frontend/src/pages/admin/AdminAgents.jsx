@@ -1,0 +1,191 @@
+import { useState, useEffect } from 'react';
+import Navbar from '../../components/Navbar';
+import LoadingSpinner from '../../components/LoadingSpinner';
+import ErrorBanner from '../../components/ErrorBanner';
+import Modal from '../../components/Modal';
+import axiosClient from '../../api/axiosClient';
+import './AdminPlayers.css';
+
+export default function AdminAgents() {
+    const [agents, setAgents] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+    const [showModal, setShowModal] = useState(false);
+    const [editingAgent, setEditingAgent] = useState(null);
+    const [formData, setFormData] = useState({
+        agent_name: '',
+    });
+    const [searchTerm, setSearchTerm] = useState('');
+
+    useEffect(() => {
+        loadAgents();
+    }, [searchTerm]);
+
+    const loadAgents = async () => {
+        try {
+            setLoading(true);
+            const params = {};
+            if (searchTerm) params.search = searchTerm;
+            
+            const response = await axiosClient.get('/admin/agents', { params });
+            setAgents(response.data.data.agents);
+        } catch (err) {
+            console.error('Load agents error:', err);
+            setError(err.response?.data?.error || 'Failed to load agents');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleAdd = () => {
+        setEditingAgent(null);
+        setFormData({
+            agent_name: '',
+        });
+        setShowModal(true);
+    };
+
+    const handleEdit = (agent) => {
+        setEditingAgent(agent);
+        setFormData({
+            agent_name: agent.agent_name,
+        });
+        setShowModal(true);
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            if (editingAgent) {
+                await axiosClient.put(`/admin/agents/${editingAgent.agent_id}`, formData);
+            } else {
+                await axiosClient.post('/admin/agents', formData);
+            }
+            setShowModal(false);
+            loadAgents();
+        } catch (err) {
+            console.error('Save agent error:', err);
+            alert(err.response?.data?.error || 'Failed to save agent');
+        }
+    };
+
+    const handleDelete = async (agentId) => {
+        if (!window.confirm('Are you sure you want to delete this agent?')) return;
+        
+        try {
+            await axiosClient.delete(`/admin/agents/${agentId}`);
+            loadAgents();
+        } catch (err) {
+            console.error('Delete agent error:', err);
+            alert(err.response?.data?.error || 'Failed to delete agent');
+        }
+    };
+
+    if (loading && agents.length === 0) return <LoadingSpinner fullPage />;
+
+    return (
+        <div>
+            <Navbar />
+            <div className="admin-agents">
+                <div className="admin-header">
+                    <h1 className="admin-title">Agent Management</h1>
+                    <p className="admin-subtitle">Manage agents and player representations</p>
+                </div>
+
+                <div className="admin-content">
+                    {error && <ErrorBanner message={error} />}
+
+                    <div className="toolbar">
+                        <div className="search-filters">
+                            <input
+                                type="text"
+                                placeholder="Search agents..."
+                                className="search-input"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </div>
+                        <button className="add-btn" onClick={handleAdd}>
+                            ➕ Add Agent
+                        </button>
+                    </div>
+
+                    <div className="data-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Agent Name</th>
+                                    <th>Players Represented</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {agents.map(agent => (
+                                    <tr key={agent.agent_id}>
+                                        <td>{agent.agent_id}</td>
+                                        <td className="player-name">{agent.agent_name}</td>
+                                        <td>{agent._count?.players || 0}</td>
+                                        <td>
+                                            <div className="action-btns">
+                                                <button 
+                                                    className="btn-edit"
+                                                    onClick={() => handleEdit(agent)}
+                                                    title="Edit"
+                                                >
+                                                    ✏️
+                                                </button>
+                                                <button 
+                                                    className="btn-delete"
+                                                    onClick={() => handleDelete(agent.agent_id)}
+                                                    title="Delete"
+                                                >
+                                                    🗑️
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {agents.length === 0 && !loading && (
+                        <div className="empty-state">
+                            <p>No agents found</p>
+                        </div>
+                    )}
+                </div>
+
+                {showModal && (
+                    <Modal onClose={() => setShowModal(false)}>
+                        <h2 className="modal-title">
+                            {editingAgent ? 'Edit Agent' : 'Add New Agent'}
+                        </h2>
+                        <form onSubmit={handleSubmit} className="agent-form">
+                            <div className="form-group">
+                                <label>Agent Name *</label>
+                                <input
+                                    type="text"
+                                    required
+                                    value={formData.agent_name}
+                                    onChange={(e) => setFormData({...formData, agent_name: e.target.value})}
+                                    placeholder="Enter agent name"
+                                />
+                            </div>
+
+                            <div className="form-actions">
+                                <button type="button" className="btn-cancel" onClick={() => setShowModal(false)}>
+                                    Cancel
+                                </button>
+                                <button type="submit" className="btn-submit">
+                                    {editingAgent ? 'Update' : 'Create'}
+                                </button>
+                            </div>
+                        </form>
+                    </Modal>
+                )}
+            </div>
+        </div>
+    );
+}

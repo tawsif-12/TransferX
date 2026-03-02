@@ -7,7 +7,7 @@ import './Navbar.css';
 export default function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, role, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
 
   const handleLogout = () => {
@@ -52,6 +52,14 @@ export default function Navbar() {
           >
             Agents
           </Link>
+          {role === 'ADMIN' && (
+            <Link
+              to="/admin"
+              className={`navbar-link navbar-link--admin ${isActive('/admin') ? 'navbar-link--active' : ''}`}
+            >
+              🛡️ Admin
+            </Link>
+          )}
         </div>
 
         <div className="navbar-controls">

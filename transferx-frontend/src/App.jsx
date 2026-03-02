@@ -20,6 +20,13 @@ import ClubsPage from './pages/common/ClubsPage';
 import TransfersPage from './pages/common/TransfersPage';
 import AgentsPage from './pages/common/AgentsPage';
 
+// Admin pages
+import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminPlayers from './pages/admin/AdminPlayers';
+import AdminTransfers from './pages/admin/AdminTransfers';
+import AdminContracts from './pages/admin/AdminContracts';
+import AdminAgents from './pages/admin/AdminAgents';
+
 // Misc
 import NotFound from './pages/misc/NotFound';
 import Unauthorized from './pages/misc/Unauthorized';
@@ -69,16 +76,16 @@ export default function App() {
             <Route path="/agents/:id" element={<PagePlaceholder title="Agent Detail" />} />
             <Route path="/users/:userId" element={<UserProfile />} />
 
-            {/* ── Admin routes (optional) ──────────────────────────── */}
-            <Route element={<ProtectedRoute requiredRole="admin" />}>
-              <Route path="/admin/dashboard" element={<PagePlaceholder title="Admin Dashboard" />} />
-              <Route path="/admin/players" element={<PagePlaceholder title="Manage Players" />} />
+            {/* ── Admin routes (ADMIN only) ──────────────────────────── */}
+            <Route element={<ProtectedRoute requiredRole="ADMIN" />}>
+              <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/admin/dashboard" element={<AdminDashboard />} />
+              <Route path="/admin/players" element={<AdminPlayers />} />
+              <Route path="/admin/transfers" element={<AdminTransfers />} />
+              <Route path="/admin/contracts" element={<AdminContracts />} />
+              <Route path="/admin/agents" element={<AdminAgents />} />
               <Route path="/admin/clubs" element={<PagePlaceholder title="Manage Clubs" />} />
               <Route path="/admin/leagues" element={<PagePlaceholder title="Manage Leagues" />} />
-              <Route path="/admin/agents" element={<PagePlaceholder title="Manage Agents" />} />
-              <Route path="/admin/transfers" element={<PagePlaceholder title="Manage Transfers" />} />
-              <Route path="/admin/contracts" element={<PagePlaceholder title="Manage Contracts" />} />
-              <Route path="/admin/transfer-history" element={<PagePlaceholder title="Transfer History" />} />
             </Route>
 
             {/* ── Fallbacks ───────────────────────────────────────── */}
