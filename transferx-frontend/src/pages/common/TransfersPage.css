@@ -5,7 +5,7 @@
 }
 
 .page-header {
-    background: linear-gradient(135deg, var(--blue), var(--green-primary));
+    background: linear-gradient(135deg, var(--green-primary), var(--green-dark));
     padding: 60px 24px;
     text-align: center;
     margin-bottom: 40px;
@@ -45,7 +45,7 @@
 }
 
 .transfer-card:hover {
-    border-color: var(--blue);
+    border-color: var(--green-primary);
     box-shadow: var(--shadow-glow);
     transform: translateY(-2px);
 }
@@ -135,7 +135,7 @@
 
 .transfer-arrow {
     font-size: 24px;
-    color: var(--blue);
+    color: var(--green-primary);
     font-weight: 700;
 }
 

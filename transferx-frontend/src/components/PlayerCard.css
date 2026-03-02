@@ -1,5 +1,5 @@
 .player-card {
-  background: var(--bg-card);
+  background: #ffffff;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: 24px;
@@ -10,9 +10,9 @@
 }
 
 .player-card:hover {
-  border-color: var(--border-strong);
+  border-color: var(--green-primary);
   transform: translateY(-4px);
-  box-shadow: var(--shadow-card);
+  box-shadow: 0 4px 16px rgba(34, 197, 94, 0.15);
 }
 
 .player-card .status-badge {
@@ -34,6 +34,7 @@
   font-size: 20px;
   font-weight: 700;
   margin: 0 auto 12px;
+  border: 2px solid var(--green-primary);
 }
 
 .player-card__name {

@@ -1,12 +1,12 @@
 .error-banner {
-  background: rgba(248, 113, 113, 0.1);
-  border: 1px solid rgba(248, 113, 113, 0.25);
+  background: #fef2f2;
+  border: 1px solid #fecaca;
   border-radius: var(--radius-sm);
   padding: 12px 16px;
   display: flex;
   align-items: center;
   gap: 12px;
-  color: #fca5a5;
+  color: #dc2626;
   font-size: 14px;
   margin-bottom: 20px;
   opacity: 0;
@@ -31,7 +31,7 @@
 .error-banner__dismiss {
   background: none;
   border: none;
-  color: #fca5a5;
+  color: #dc2626;
   font-size: 24px;
   line-height: 1;
   padding: 0;

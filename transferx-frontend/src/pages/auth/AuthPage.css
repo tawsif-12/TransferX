@@ -5,7 +5,7 @@
 
 .auth-left {
   flex: 1;
-  background: linear-gradient(135deg, #06100d 0%, #0d1f14 50%, #0a1a10 100%);
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 50%, #15803d 100%);
   position: relative;
   overflow: hidden;
   padding: 60px;
@@ -21,7 +21,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: radial-gradient(ellipse 60% 80% at 30% 50%, rgba(82, 183, 136, 0.08), transparent);
+  background: radial-gradient(ellipse 60% 80% at 30% 50%, rgba(255, 255, 255, 0.1), transparent);
   pointer-events: none;
 }
 
@@ -52,11 +52,12 @@
   font-family: 'Outfit', sans-serif;
   font-size: 36px;
   font-weight: 800;
-  color: var(--text-primary);
+  color: #ffffff;
 }
 
 .auth-logo-highlight {
-  color: var(--green-primary);
+  color: #ffffff;
+  opacity: 0.9;
 }
 
 .auth-tagline {
@@ -64,16 +65,17 @@
   font-weight: 800;
   line-height: 1.2;
   margin-bottom: 20px;
-  color: var(--text-primary);
+  color: #ffffff;
 }
 
 .auth-tagline-highlight {
-  color: var(--green-primary);
+  color: #ffffff;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
 }
 
 .auth-description {
   font-size: 16px;
-  color: var(--text-muted);
+  color: rgba(255, 255, 255, 0.8);
   max-width: 380px;
   margin-bottom: 40px;
   line-height: 1.6;
@@ -92,7 +94,7 @@
   font-family: 'Outfit', sans-serif;
   font-size: 32px;
   font-weight: 800;
-  color: var(--green-primary);
+  color: #ffffff;
   margin-bottom: 4px;
 }
 
@@ -100,7 +102,7 @@
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: var(--text-muted);
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .auth-decorations {
@@ -115,7 +117,7 @@
 
 .auth-ball {
   position: absolute;
-  opacity: 0.06;
+  opacity: 0.15;
   animation: floatBall infinite alternate ease-in-out;
 }
 
@@ -166,9 +168,9 @@
 
 .auth-right {
   width: 480px;
-  background: rgba(255, 255, 255, 0.025);
-  border-left: 1px solid rgba(82, 183, 136, 0.1);
-  backdrop-filter: blur(20px);
+  background: #ffffff;
+  border-left: 1px solid rgba(34, 197, 94, 0.15);
+  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.08);
   position: relative;
   overflow-y: auto;
 }
@@ -180,7 +182,7 @@
   right: -200px;
   width: 400px;
   height: 400px;
-  background: radial-gradient(circle, rgba(82, 183, 136, 0.06), transparent);
+  background: radial-gradient(circle, rgba(34, 197, 94, 0.05), transparent);
   pointer-events: none;
 }
 
@@ -191,8 +193,8 @@
 }
 
 .auth-tabs {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(82, 183, 136, 0.12);
+  background: #f0fdf4;
+  border: 1px solid rgba(34, 197, 94, 0.2);
   border-radius: 12px;
   padding: 4px;
   display: flex;
@@ -215,12 +217,13 @@
 
 .auth-tab:hover {
   color: var(--green-primary);
+  background: rgba(34, 197, 94, 0.05);
 }
 
 .auth-tab--active {
   background: var(--green-primary);
-  color: var(--text-inverse);
-  box-shadow: 0 4px 20px rgba(82, 183, 136, 0.35);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3);
 }
 
 .auth-form {
@@ -261,7 +264,7 @@
   background: linear-gradient(135deg, var(--green-primary), var(--green-dark));
   border: none;
   border-radius: var(--radius-sm);
-  color: var(--text-inverse);
+  color: #ffffff;
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
@@ -271,15 +274,16 @@
   justify-content: center;
   gap: 8px;
   margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.2);
 }
 
 .auth-submit:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(82, 183, 136, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(34, 197, 94, 0.4);
 }
 
 .auth-submit:disabled {
-  opacity: 0.7;
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
@@ -287,14 +291,14 @@
   width: 16px;
   height: 16px;
   border: 2px solid transparent;
-  border-top-color: var(--text-inverse);
+  border-top-color: #ffffff;
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
 }
 
 .auth-demo {
-  background: rgba(82, 183, 136, 0.04);
-  border: 1px dashed rgba(82, 183, 136, 0.2);
+  background: #f0fdf4;
+  border: 1px dashed rgba(34, 197, 94, 0.3);
   border-radius: var(--radius-sm);
   padding: 12px;
   text-align: center;
