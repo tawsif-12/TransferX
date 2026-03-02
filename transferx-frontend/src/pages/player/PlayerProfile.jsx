@@ -86,7 +86,7 @@ export default function PlayerProfile() {
                 ) : player ? (
                     <>
                         <div className="profile-header">
-                            <div className="profile-cover" style={{ background: 'linear-gradient(135deg, var(--blue), var(--green-primary))' }}></div>
+                            <div className="profile-cover" style={{ background: 'linear-gradient(135deg, var(--green-primary), var(--green-dark))' }}></div>
                             <div className="profile-top">
                                 <div className="profile-avatar">
                                     <div className="avatar-large">⚽</div>
@@ -115,7 +115,7 @@ export default function PlayerProfile() {
                                         <div className="stat-label">Int'l Caps</div>
                                     </div>
                                     <div className="stat-item">
-                                        <div className="stat-value">{player.market_value}</div>
+                                        <div className="stat-value">€{(player.market_value / 1000).toFixed(0)}K</div>
                                         <div className="stat-label">Market Value</div>
                                     </div>
                                 </div>
