@@ -22,16 +22,29 @@ export default function ErrorBanner({ message, onDismiss, autoDismiss = true, di
     setTimeout(() => onDismiss?.(), 300);
   };
 
+  // Keyboard handler for Escape key
+  const handleKeyDown = (e) => {
+    if (e.key === 'Escape') {
+      handleDismiss();
+    }
+  };
+
   return (
-    <div className={`error-banner ${visible ? 'error-banner--visible' : ''}`}>
-      <span className="error-banner__icon">⚠️</span>
+    <div
+      className={`error-banner ${visible ? 'error-banner--visible' : ''}`}
+      role="alert"
+      aria-live="assertive"
+      aria-atomic="true"
+      onKeyDown={handleKeyDown}
+    >
+      <span className="error-banner__icon" aria-hidden="true">⚠️</span>
       <span className="error-banner__message">{message}</span>
       <button
         type="button"
         className="error-banner__dismiss"
         onClick={handleDismiss}
-        aria-label="Dismiss error"
-        title="Dismiss"
+        aria-label="Dismiss error message"
+        title="Dismiss (Esc)"
       >
         ✕
       </button>

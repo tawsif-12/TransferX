@@ -206,6 +206,7 @@ export default function AuthPage({ defaultTab = 'login' }) {
                 error={loginErrors.email}
                 placeholder="you@transferx.com"
                 icon="✉"
+                required
               />
 
               <PasswordInput
@@ -218,6 +219,7 @@ export default function AuthPage({ defaultTab = 'login' }) {
                 }}
                 error={loginErrors.password}
                 placeholder="Enter your password"
+                required
               />
 
               <div className="auth-forgot">
@@ -257,6 +259,7 @@ export default function AuthPage({ defaultTab = 'login' }) {
                 error={signupErrors.fullName}
                 placeholder="Your full name"
                 icon="👤"
+                required
               />
 
               <FormInput
@@ -271,6 +274,7 @@ export default function AuthPage({ defaultTab = 'login' }) {
                 error={signupErrors.email}
                 placeholder="you@transferx.com"
                 icon="✉"
+                required
               />
 
               <div>
@@ -284,6 +288,8 @@ export default function AuthPage({ defaultTab = 'login' }) {
                   }}
                   error={signupErrors.password}
                   placeholder="Min. 6 characters"
+                  required
+                  minLength={6}
                 />
                 <PasswordStrengthBar password={signupPassword} />
               </div>
@@ -297,7 +303,8 @@ export default function AuthPage({ defaultTab = 'login' }) {
                   setSignupErrors({});
                 }}
                 error={signupErrors.confirm}
-                placeholder="Repeat your password"
+                placeholder="Re-enter your password"
+                required
               />
 
               <button type="submit" className="auth-submit" disabled={loading}>

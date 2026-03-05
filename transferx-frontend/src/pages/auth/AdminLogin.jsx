@@ -79,6 +79,7 @@ export default function AdminLogin() {
               error={errors.email}
               placeholder="admin@transferx.com"
               icon="✉"
+              required
             />
 
             <PasswordInput
@@ -91,6 +92,7 @@ export default function AdminLogin() {
               }}
               error={errors.password}
               placeholder="Enter your password"
+              required
             />
 
             <button type="submit" className="admin-login-submit" disabled={loading}>
