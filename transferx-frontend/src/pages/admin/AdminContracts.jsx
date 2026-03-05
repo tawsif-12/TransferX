@@ -3,6 +3,7 @@ import Navbar from '../../components/Navbar';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ErrorBanner from '../../components/ErrorBanner';
 import Modal from '../../components/Modal';
+import Button from '../../components/Button';
 import axiosClient from '../../api/axiosClient';
 import './AdminPlayers.css';
 
@@ -14,6 +15,8 @@ export default function AdminContracts() {
     const [error, setError] = useState('');
     const [showModal, setShowModal] = useState(false);
     const [editingContract, setEditingContract] = useState(null);
+    const [submitting, setSubmitting] = useState(false);
+    const [deletingId, setDeletingId] = useState(null);
     const [formData, setFormData] = useState({
         player_id: '',
         club_id: '',
@@ -36,7 +39,7 @@ export default function AdminContracts() {
             const params = {};
             if (filterStatus) params.status = filterStatus;
             if (filterClub) params.clubId = filterClub;
-            
+
             const response = await axiosClient.get('/admin/contracts', { params });
             setContracts(response.data.data.contracts);
         } catch (err) {
@@ -71,7 +74,7 @@ export default function AdminContracts() {
         const startDate = new Date();
         const endDate = new Date();
         endDate.setFullYear(endDate.getFullYear() + 1);
-        
+
         setFormData({
             player_id: '',
             club_id: '',
@@ -97,6 +100,7 @@ export default function AdminContracts() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
+            setSubmitting(true);
             if (editingContract) {
                 await axiosClient.put(`/admin/contracts/${editingContract.contract_id}`, formData);
             } else {
@@ -106,19 +110,24 @@ export default function AdminContracts() {
             loadContracts();
         } catch (err) {
             console.error('Save contract error:', err);
-            alert(err.response?.data?.error || 'Failed to save contract');
+            setError(err.response?.data?.error || 'Failed to save contract');
+        } finally {
+            setSubmitting(false);
         }
     };
 
     const handleDelete = async (contractId) => {
         if (!window.confirm('Are you sure you want to delete this contract?')) return;
-        
+
         try {
+            setDeletingId(contractId);
             await axiosClient.delete(`/admin/contracts/${contractId}`);
             loadContracts();
         } catch (err) {
             console.error('Delete contract error:', err);
-            alert(err.response?.data?.error || 'Failed to delete contract');
+            setError(err.response?.data?.error || 'Failed to delete contract');
+        } finally {
+            setDeletingId(null);
         }
     };
 
@@ -134,7 +143,7 @@ export default function AdminContracts() {
                 </div>
 
                 <div className="admin-content">
-                    {error && <ErrorBanner message={error} />}
+                    {error && <ErrorBanner message={error} onDismiss={() => setError('')} autoDismiss={true} dismissTimeout={5000} />}
 
                     <div className="toolbar">
                         <div className="search-filters">
@@ -191,7 +200,7 @@ export default function AdminContracts() {
                                         <td>{new Date(contract.start_date).toLocaleDateString()}</td>
                                         <td>{new Date(contract.end_date).toLocaleDateString()}</td>
                                         <td>
-                                            {contract.salary 
+                                            {contract.salary
                                                 ? `€${Number(contract.salary).toLocaleString()}`
                                                 : 'N/A'
                                             }
@@ -203,19 +212,21 @@ export default function AdminContracts() {
                                         </td>
                                         <td>
                                             <div className="action-btns">
-                                                <button 
+                                                <button
                                                     className="btn-edit"
                                                     onClick={() => handleEdit(contract)}
+                                                    disabled={deletingId !== null}
                                                     title="Edit"
                                                 >
                                                     ✏️
                                                 </button>
-                                                <button 
+                                                <button
                                                     className="btn-delete"
                                                     onClick={() => handleDelete(contract.contract_id)}
+                                                    disabled={deletingId === contract.contract_id}
                                                     title="Delete"
                                                 >
-                                                    🗑️
+                                                    {deletingId === contract.contract_id ? '⏳' : '🗑️'}
                                                 </button>
                                             </div>
                                         </td>
@@ -243,7 +254,7 @@ export default function AdminContracts() {
                                 <select
                                     required
                                     value={formData.player_id}
-                                    onChange={(e) => setFormData({...formData, player_id: e.target.value})}
+                                    onChange={(e) => setFormData({ ...formData, player_id: e.target.value })}
                                 >
                                     <option value="">Select Player</option>
                                     {players.map(player => (
@@ -253,13 +264,13 @@ export default function AdminContracts() {
                                     ))}
                                 </select>
                             </div>
-                            
+
                             <div className="form-group">
                                 <label>Club *</label>
                                 <select
                                     required
                                     value={formData.club_id}
-                                    onChange={(e) => setFormData({...formData, club_id: e.target.value})}
+                                    onChange={(e) => setFormData({ ...formData, club_id: e.target.value })}
                                 >
                                     <option value="">Select Club</option>
                                     {clubs.map(club => (
@@ -277,7 +288,7 @@ export default function AdminContracts() {
                                         type="date"
                                         required
                                         value={formData.start_date}
-                                        onChange={(e) => setFormData({...formData, start_date: e.target.value})}
+                                        onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
                                     />
                                 </div>
                                 <div className="form-group">
@@ -286,7 +297,7 @@ export default function AdminContracts() {
                                         type="date"
                                         required
                                         value={formData.end_date}
-                                        onChange={(e) => setFormData({...formData, end_date: e.target.value})}
+                                        onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
                                     />
                                 </div>
                             </div>
@@ -298,18 +309,23 @@ export default function AdminContracts() {
                                     step="0.01"
                                     min="0"
                                     value={formData.salary}
-                                    onChange={(e) => setFormData({...formData, salary: e.target.value})}
+                                    onChange={(e) => setFormData({ ...formData, salary: e.target.value })}
                                     placeholder="Optional"
                                 />
                             </div>
 
                             <div className="form-actions">
-                                <button type="button" className="btn-cancel" onClick={() => setShowModal(false)}>
+                                <button type="button" className="btn-cancel" onClick={() => setShowModal(false)} disabled={submitting}>
                                     Cancel
                                 </button>
-                                <button type="submit" className="btn-submit">
-                                    {editingContract ? 'Update' : 'Create'}
-                                </button>
+                                <Button
+                                    type="submit"
+                                    variant="primary"
+                                    loading={submitting}
+                                    disabled={submitting}
+                                >
+                                    {editingContract ? 'Update Contract' : 'Create Contract'}
+                                </Button>
                             </div>
                         </form>
                     </Modal>

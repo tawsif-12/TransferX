@@ -42,7 +42,7 @@ export default function Dashboard() {
     <div>
       <Navbar />
       <div style={{ padding: '40px' }}>
-        <ErrorBanner message={error} />
+        <ErrorBanner message={error} onDismiss={() => setError('')} autoDismiss={true} dismissTimeout={5000} />
       </div>
     </div>
   );
@@ -57,26 +57,26 @@ export default function Dashboard() {
         </div>
 
         <div className="dashboard-stats">
-          <StatCard 
-            label="Total Players" 
-            value={stats.totalPlayers.toLocaleString()} 
-            icon="⚽" 
+          <StatCard
+            label="Total Players"
+            value={stats.totalPlayers.toLocaleString()}
+            icon="⚽"
           />
-          <StatCard 
-            label="Total Clubs" 
-            value={stats.totalClubs.toLocaleString()} 
-            icon="🛡" 
+          <StatCard
+            label="Total Clubs"
+            value={stats.totalClubs.toLocaleString()}
+            icon="🛡"
           />
-          <StatCard 
-            label="Total Transfers" 
-            value={stats.transfersThisSeason.toLocaleString()} 
-            icon="↔" 
+          <StatCard
+            label="Total Transfers"
+            value={stats.transfersThisSeason.toLocaleString()}
+            icon="↔"
             trend="+156 this month"
           />
-          <StatCard 
-            label="Total Value" 
-            value="€12.4B" 
-            icon="💰" 
+          <StatCard
+            label="Total Value"
+            value="€12.4B"
+            icon="💰"
             trend="+8% YoY"
           />
         </div>

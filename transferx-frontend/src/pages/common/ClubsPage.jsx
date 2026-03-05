@@ -37,7 +37,7 @@ export default function ClubsPage() {
 
                 {error ? (
                     <div style={{ padding: '40px' }}>
-                        <ErrorBanner message={error} />
+                        <ErrorBanner message={error} onDismiss={() => setError('')} autoDismiss={true} dismissTimeout={5000} />
                     </div>
                 ) : (
                     <div className="page-content">

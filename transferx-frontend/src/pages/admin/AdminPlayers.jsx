@@ -4,6 +4,7 @@ import Navbar from '../../components/Navbar';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ErrorBanner from '../../components/ErrorBanner';
 import Modal from '../../components/Modal';
+import Button from '../../components/Button';
 import axiosClient from '../../api/axiosClient';
 import './AdminPlayers.css';
 
@@ -15,6 +16,8 @@ export default function AdminPlayers() {
     const [error, setError] = useState('');
     const [showModal, setShowModal] = useState(false);
     const [editingPlayer, setEditingPlayer] = useState(null);
+    const [submitting, setSubmitting] = useState(false);
+    const [deletingId, setDeletingId] = useState(null);
     const [formData, setFormData] = useState({
         first_name: '',
         last_name: '',
@@ -40,7 +43,7 @@ export default function AdminPlayers() {
             if (searchTerm) params.search = searchTerm;
             if (filterPosition) params.position = filterPosition;
             if (filterClub) params.clubId = filterClub;
-            
+
             const response = await axiosClient.get('/admin/players', { params });
             setPlayers(response.data.data.players);
         } catch (err) {
@@ -91,6 +94,7 @@ export default function AdminPlayers() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
+            setSubmitting(true);
             if (editingPlayer) {
                 await axiosClient.put(`/admin/players/${editingPlayer.player_id}`, formData);
             } else {
@@ -100,19 +104,24 @@ export default function AdminPlayers() {
             loadPlayers();
         } catch (err) {
             console.error('Save player error:', err);
-            alert(err.response?.data?.error || 'Failed to save player');
+            setError(err.response?.data?.error || 'Failed to save player');
+        } finally {
+            setSubmitting(false);
         }
     };
 
     const handleDelete = async (playerId) => {
         if (!window.confirm('Are you sure you want to delete this player?')) return;
-        
+
         try {
+            setDeletingId(playerId);
             await axiosClient.delete(`/admin/players/${playerId}`);
             loadPlayers();
         } catch (err) {
             console.error('Delete player error:', err);
-            alert(err.response?.data?.error || 'Failed to delete player');
+            setError(err.response?.data?.error || 'Failed to delete player');
+        } finally {
+            setDeletingId(null);
         }
     };
 
@@ -132,8 +141,7 @@ export default function AdminPlayers() {
                 </div>
 
                 <div className="admin-content">
-                    {error && <ErrorBanner message={error} />}
-
+                    {error && <ErrorBanner message={error} onDismiss={() => setError('')} autoDismiss={true} dismissTimeout={5000} />}
                     {/* Toolbar */}
                     <div className="toolbar">
                         <div className="search-filters">
@@ -206,26 +214,29 @@ export default function AdminPlayers() {
                                         <td>{player._count?.contracts || 0}</td>
                                         <td>
                                             <div className="action-btns">
-                                                <button 
+                                                <button
                                                     className="btn-view"
                                                     onClick={() => handleViewProfile(player.player_id)}
+                                                    disabled={deletingId !== null}
                                                     title="View Profile"
                                                 >
                                                     👁️
                                                 </button>
-                                                <button 
+                                                <button
                                                     className="btn-edit"
                                                     onClick={() => handleEdit(player)}
+                                                    disabled={deletingId !== null}
                                                     title="Edit"
                                                 >
                                                     ✏️
                                                 </button>
-                                                <button 
+                                                <button
                                                     className="btn-delete"
                                                     onClick={() => handleDelete(player.player_id)}
+                                                    disabled={deletingId === player.player_id}
                                                     title="Delete"
                                                 >
-                                                    🗑️
+                                                    {deletingId === player.player_id ? '⏳' : '🗑️'}
                                                 </button>
                                             </div>
                                         </td>
@@ -256,7 +267,7 @@ export default function AdminPlayers() {
                                         type="text"
                                         required
                                         value={formData.first_name}
-                                        onChange={(e) => setFormData({...formData, first_name: e.target.value})}
+                                        onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
                                     />
                                 </div>
                                 <div className="form-group">
@@ -265,11 +276,11 @@ export default function AdminPlayers() {
                                         type="text"
                                         required
                                         value={formData.last_name}
-                                        onChange={(e) => setFormData({...formData, last_name: e.target.value})}
+                                        onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
                                     />
                                 </div>
                             </div>
-                            
+
                             <div className="form-row">
                                 <div className="form-group">
                                     <label>Date of Birth *</label>
@@ -277,14 +288,14 @@ export default function AdminPlayers() {
                                         type="date"
                                         required
                                         value={formData.date_of_birth}
-                                        onChange={(e) => setFormData({...formData, date_of_birth: e.target.value})}
+                                        onChange={(e) => setFormData({ ...formData, date_of_birth: e.target.value })}
                                     />
                                 </div>
                                 <div className="form-group">
                                     <label>Position</label>
                                     <select
                                         value={formData.position}
-                                        onChange={(e) => setFormData({...formData, position: e.target.value})}
+                                        onChange={(e) => setFormData({ ...formData, position: e.target.value })}
                                     >
                                         <option value="Goalkeeper">Goalkeeper</option>
                                         <option value="Defender">Defender</option>
@@ -300,14 +311,14 @@ export default function AdminPlayers() {
                                     <input
                                         type="text"
                                         value={formData.nationality}
-                                        onChange={(e) => setFormData({...formData, nationality: e.target.value})}
+                                        onChange={(e) => setFormData({ ...formData, nationality: e.target.value })}
                                     />
                                 </div>
                                 <div className="form-group">
                                     <label>Current Club</label>
                                     <select
                                         value={formData.current_club_id}
-                                        onChange={(e) => setFormData({...formData, current_club_id: e.target.value})}
+                                        onChange={(e) => setFormData({ ...formData, current_club_id: e.target.value })}
                                     >
                                         <option value="">Free Agent</option>
                                         {clubs.map(club => (
@@ -325,17 +336,22 @@ export default function AdminPlayers() {
                                     type="number"
                                     step="0.01"
                                     value={formData.fee}
-                                    onChange={(e) => setFormData({...formData, fee: e.target.value})}
+                                    onChange={(e) => setFormData({ ...formData, fee: e.target.value })}
                                 />
                             </div>
 
                             <div className="form-actions">
-                                <button type="button" className="btn-cancel" onClick={() => setShowModal(false)}>
+                                <button type="button" className="btn-cancel" onClick={() => setShowModal(false)} disabled={submitting}>
                                     Cancel
                                 </button>
-                                <button type="submit" className="btn-submit">
-                                    {editingPlayer ? 'Update' : 'Create'}
-                                </button>
+                                <Button
+                                    type="submit"
+                                    variant="primary"
+                                    loading={submitting}
+                                    disabled={submitting}
+                                >
+                                    {editingPlayer ? 'Update Player' : 'Create Player'}
+                                </Button>
                             </div>
                         </form>
                     </Modal>

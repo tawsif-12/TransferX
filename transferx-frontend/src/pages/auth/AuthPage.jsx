@@ -54,15 +54,15 @@ export default function AuthPage({ defaultTab = 'login' }) {
 
     setLoading(true);
     try {
-      const res = await axiosClient.post('/auth/login', { 
-        email: loginEmail, 
-        password: loginPassword 
+      const res = await axiosClient.post('/auth/login', {
+        email: loginEmail,
+        password: loginPassword
       });
-      
+
       const { token, role, user } = res.data.data;
       setSuccess(`Welcome back, ${user.name.split(' ')[0]}!`);
       auth.login(token, role, user);
-      
+
       setTimeout(() => {
         if (role === 'ADMIN') navigate('/admin/dashboard');
         else navigate('/');
@@ -79,11 +79,11 @@ export default function AuthPage({ defaultTab = 'login' }) {
     e.preventDefault();
     setGlobalError('');
 
-    const errors = validateSignupForm({ 
-      fullName: signupName, 
-      email: signupEmail, 
-      password: signupPassword, 
-      confirm: signupConfirm 
+    const errors = validateSignupForm({
+      fullName: signupName,
+      email: signupEmail,
+      password: signupPassword,
+      confirm: signupConfirm
     });
     if (Object.keys(errors).length > 0) {
       setSignupErrors(errors);
@@ -92,16 +92,16 @@ export default function AuthPage({ defaultTab = 'login' }) {
 
     setLoading(true);
     try {
-      const res = await axiosClient.post('/auth/signup', { 
-        fullName: signupName, 
-        email: signupEmail, 
-        password: signupPassword 
+      const res = await axiosClient.post('/auth/signup', {
+        fullName: signupName,
+        email: signupEmail,
+        password: signupPassword
       });
-      
+
       const { token, role, user } = res.data.data;
       setSuccess(`Welcome to TransferX, ${user.name.split(' ')[0]}!`);
       auth.login(token, role, user);
-      
+
       setTimeout(() => {
         navigate('/');
       }, 1500);
@@ -190,7 +190,7 @@ export default function AuthPage({ defaultTab = 'login' }) {
             </button>
           </div>
 
-          {globalError && <ErrorBanner message={globalError} onDismiss={() => setGlobalError('')} />}
+          {globalError && <ErrorBanner message={globalError} onDismiss={() => setGlobalError('')} autoDismiss={true} dismissTimeout={5000} />}
 
           {activeTab === 'login' ? (
             <form onSubmit={handleLogin} className="auth-form">

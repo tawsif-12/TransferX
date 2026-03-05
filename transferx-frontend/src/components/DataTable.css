@@ -59,12 +59,16 @@
   border-bottom: 1px solid var(--border);
 }
 
-.data-table-body {
-}
+.data-table-body {}
 
 .data-table-row {
   border-bottom: 1px solid var(--border);
-  transition: background 0.15s ease;
+  transition: background 0.15s ease, opacity 0.2s ease;
+}
+
+.data-table-row--loading {
+  opacity: 0.6;
+  pointer-events: none;
 }
 
 .data-table-row:nth-child(odd) {
@@ -75,7 +79,7 @@
   background: var(--bg-surface);
 }
 
-.data-table-row:hover {
+.data-table-row:hover:not(.data-table-row--loading) {
   background: var(--bg-elevated);
 }
 
@@ -101,22 +105,44 @@
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
+  color: inherit;
+}
+
+.data-table-action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .data-table-action-btn--edit {
   color: var(--green-primary);
 }
 
-.data-table-action-btn--edit:hover {
+.data-table-action-btn--edit:hover:not(:disabled) {
   background: rgba(34, 197, 94, 0.1);
+  transform: scale(1.1);
 }
 
 .data-table-action-btn--delete {
   color: var(--red);
 }
 
-.data-table-action-btn--delete:hover {
+.data-table-action-btn--delete:hover:not(:disabled) {
   background: rgba(248, 113, 113, 0.1);
+  transform: scale(1.1);
+}
+
+.data-table-action-spinner {
+  animation: spinningSVG 1s linear infinite;
+}
+
+@keyframes spinningSVG {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .data-table-loading,

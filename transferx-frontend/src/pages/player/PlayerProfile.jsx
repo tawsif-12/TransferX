@@ -81,7 +81,7 @@ export default function PlayerProfile() {
             <div className="player-profile">
                 {error ? (
                     <div style={{ padding: '40px' }}>
-                        <ErrorBanner message={error} />
+                        <ErrorBanner message={error} onDismiss={() => setError('')} autoDismiss={true} dismissTimeout={5000} />
                     </div>
                 ) : player ? (
                     <>

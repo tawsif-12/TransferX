@@ -45,7 +45,7 @@ export default function AdminDashboard() {
 
                 {error && (
                     <div className="admin-content">
-                        <ErrorBanner message={error} />
+                        <ErrorBanner message={error} onDismiss={() => setError('')} autoDismiss={true} dismissTimeout={5000} />
                     </div>
                 )}
 

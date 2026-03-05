@@ -3,6 +3,7 @@ import Navbar from '../../components/Navbar';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ErrorBanner from '../../components/ErrorBanner';
 import Modal from '../../components/Modal';
+import Button from '../../components/Button';
 import axiosClient from '../../api/axiosClient';
 import './AdminPlayers.css';
 
@@ -14,6 +15,8 @@ export default function AdminTransfers() {
     const [error, setError] = useState('');
     const [showModal, setShowModal] = useState(false);
     const [editingTransfer, setEditingTransfer] = useState(null);
+    const [submitting, setSubmitting] = useState(false);
+    const [deletingId, setDeletingId] = useState(null);
     const [formData, setFormData] = useState({
         player_id: '',
         from_club_id: '',
@@ -37,7 +40,7 @@ export default function AdminTransfers() {
             const params = {};
             if (filterType) params.type = filterType;
             if (filterClub) params.clubId = filterClub;
-            
+
             const response = await axiosClient.get('/admin/transfers', { params });
             setTransfers(response.data.data.transfers);
         } catch (err) {
@@ -95,6 +98,7 @@ export default function AdminTransfers() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
+            setSubmitting(true);
             if (editingTransfer) {
                 await axiosClient.put(`/admin/transfers/${editingTransfer.transfer_id}`, formData);
             } else {
@@ -104,19 +108,24 @@ export default function AdminTransfers() {
             loadTransfers();
         } catch (err) {
             console.error('Save transfer error:', err);
-            alert(err.response?.data?.error || 'Failed to save transfer');
+            setError(err.response?.data?.error || 'Failed to save transfer');
+        } finally {
+            setSubmitting(false);
         }
     };
 
     const handleDelete = async (transferId) => {
         if (!window.confirm('Are you sure you want to delete this transfer?')) return;
-        
+
         try {
+            setDeletingId(transferId);
             await axiosClient.delete(`/admin/transfers/${transferId}`);
             loadTransfers();
         } catch (err) {
             console.error('Delete transfer error:', err);
-            alert(err.response?.data?.error || 'Failed to delete transfer');
+            setError(err.response?.data?.error || 'Failed to delete transfer');
+        } finally {
+            setDeletingId(null);
         }
     };
 
@@ -132,7 +141,7 @@ export default function AdminTransfers() {
                 </div>
 
                 <div className="admin-content">
-                    {error && <ErrorBanner message={error} />}
+                    {error && <ErrorBanner message={error} onDismiss={() => setError('')} autoDismiss={true} dismissTimeout={5000} />}
 
                     <div className="toolbar">
                         <div className="search-filters">
@@ -193,7 +202,7 @@ export default function AdminTransfers() {
                                             </span>
                                         </td>
                                         <td>
-                                            {transfer.transfer_fee 
+                                            {transfer.transfer_fee
                                                 ? `€${(transfer.transfer_fee / 1000).toFixed(0)}K`
                                                 : 'N/A'
                                             }
@@ -201,19 +210,21 @@ export default function AdminTransfers() {
                                         <td>{new Date(transfer.transfer_date).toLocaleDateString()}</td>
                                         <td>
                                             <div className="action-btns">
-                                                <button 
+                                                <button
                                                     className="btn-edit"
                                                     onClick={() => handleEdit(transfer)}
+                                                    disabled={deletingId !== null}
                                                     title="Edit"
                                                 >
                                                     ✏️
                                                 </button>
-                                                <button 
+                                                <button
                                                     className="btn-delete"
                                                     onClick={() => handleDelete(transfer.transfer_id)}
+                                                    disabled={deletingId === transfer.transfer_id}
                                                     title="Delete"
                                                 >
-                                                    🗑️
+                                                    {deletingId === transfer.transfer_id ? '⏳' : '🗑️'}
                                                 </button>
                                             </div>
                                         </td>
@@ -241,7 +252,7 @@ export default function AdminTransfers() {
                                 <select
                                     required
                                     value={formData.player_id}
-                                    onChange={(e) => setFormData({...formData, player_id: e.target.value})}
+                                    onChange={(e) => setFormData({ ...formData, player_id: e.target.value })}
                                 >
                                     <option value="">Select Player</option>
                                     {players.map(player => (
@@ -251,14 +262,14 @@ export default function AdminTransfers() {
                                     ))}
                                 </select>
                             </div>
-                            
+
                             <div className="form-row">
                                 <div className="form-group">
                                     <label>From Club *</label>
                                     <select
                                         required
                                         value={formData.from_club_id}
-                                        onChange={(e) => setFormData({...formData, from_club_id: e.target.value})}
+                                        onChange={(e) => setFormData({ ...formData, from_club_id: e.target.value })}
                                     >
                                         <option value="">Select Club</option>
                                         {clubs.map(club => (
@@ -273,7 +284,7 @@ export default function AdminTransfers() {
                                     <select
                                         required
                                         value={formData.to_club_id}
-                                        onChange={(e) => setFormData({...formData, to_club_id: e.target.value})}
+                                        onChange={(e) => setFormData({ ...formData, to_club_id: e.target.value })}
                                     >
                                         <option value="">Select Club</option>
                                         {clubs.map(club => (
@@ -291,7 +302,7 @@ export default function AdminTransfers() {
                                     <select
                                         required
                                         value={formData.transfer_type}
-                                        onChange={(e) => setFormData({...formData, transfer_type: e.target.value})}
+                                        onChange={(e) => setFormData({ ...formData, transfer_type: e.target.value })}
                                     >
                                         <option value="PERMANENT">Permanent</option>
                                         <option value="LOAN">Loan</option>
@@ -305,7 +316,7 @@ export default function AdminTransfers() {
                                         step="0.01"
                                         min="0"
                                         value={formData.transfer_fee}
-                                        onChange={(e) => setFormData({...formData, transfer_fee: e.target.value})}
+                                        onChange={(e) => setFormData({ ...formData, transfer_fee: e.target.value })}
                                     />
                                 </div>
                             </div>
@@ -316,17 +327,22 @@ export default function AdminTransfers() {
                                     type="date"
                                     required
                                     value={formData.transfer_date}
-                                    onChange={(e) => setFormData({...formData, transfer_date: e.target.value})}
+                                    onChange={(e) => setFormData({ ...formData, transfer_date: e.target.value })}
                                 />
                             </div>
 
                             <div className="form-actions">
-                                <button type="button" className="btn-cancel" onClick={() => setShowModal(false)}>
+                                <button type="button" className="btn-cancel" onClick={() => setShowModal(false)} disabled={submitting}>
                                     Cancel
                                 </button>
-                                <button type="submit" className="btn-submit">
-                                    {editingTransfer ? 'Update' : 'Create'}
-                                </button>
+                                <Button
+                                    type="submit"
+                                    variant="primary"
+                                    loading={submitting}
+                                    disabled={submitting}
+                                >
+                                    {editingTransfer ? 'Update Transfer' : 'Record Transfer'}
+                                </Button>
                             </div>
                         </form>
                     </Modal>

@@ -2,22 +2,23 @@ import { useState } from 'react';
 import LoadingSpinner from './LoadingSpinner';
 import './DataTable.css';
 
-export default function DataTable({ 
-  columns, 
-  data, 
-  onEdit, 
-  onDelete, 
-  loading = false, 
-  searchable = true 
+export default function DataTable({
+  columns,
+  data,
+  onEdit,
+  onDelete,
+  loading = false,
+  searchable = true,
+  loadingRowId = null
 }) {
   const [search, setSearch] = useState('');
 
   const filteredData = search
     ? data.filter(row =>
-        Object.values(row).some(val =>
-          String(val).toLowerCase().includes(search.toLowerCase())
-        )
+      Object.values(row).some(val =>
+        String(val).toLowerCase().includes(search.toLowerCase())
       )
+    )
     : data;
 
   return (
@@ -30,6 +31,7 @@ export default function DataTable({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="data-table-search-input"
+            aria-label="Search table"
           />
         </div>
       )}
@@ -61,7 +63,7 @@ export default function DataTable({
               </tr>
             ) : (
               filteredData.map((row, idx) => (
-                <tr key={idx} className="data-table-row">
+                <tr key={idx} className={`data-table-row ${loadingRowId === row.id ? 'data-table-row--loading' : ''}`}>
                   {columns.map((col) => (
                     <td key={col.key} className="data-table-td">
                       {col.render ? col.render(row) : row[col.key]}
@@ -71,22 +73,33 @@ export default function DataTable({
                     <button
                       className="data-table-action-btn data-table-action-btn--edit"
                       onClick={() => onEdit?.(row)}
+                      disabled={loadingRowId !== null}
                       title="Edit"
+                      aria-label={`Edit row ${idx}`}
                     >
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                     </button>
                     <button
                       className="data-table-action-btn data-table-action-btn--delete"
                       onClick={() => onDelete?.(row)}
-                      title="Delete"
+                      disabled={loadingRowId === row.id}
+                      title={loadingRowId === row.id ? 'Deleting...' : 'Delete'}
+                      aria-label={`Delete row ${idx}`}
                     >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <polyline points="3 6 5 6 21 6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
+                      {loadingRowId === row.id ? (
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="data-table-action-spinner">
+                          <circle cx="12" cy="12" r="10" strokeWidth="2" opacity="0.3" />
+                          <path d="M12 2a10 10 0 0 1 10 10" strokeWidth="2" strokeLinecap="round" />
+                        </svg>
+                      ) : (
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                          <polyline points="3 6 5 6 21 6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      )}
                     </button>
                   </td>
                 </tr>

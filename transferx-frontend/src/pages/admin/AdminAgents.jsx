@@ -3,6 +3,7 @@ import Navbar from '../../components/Navbar';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ErrorBanner from '../../components/ErrorBanner';
 import Modal from '../../components/Modal';
+import Button from '../../components/Button';
 import axiosClient from '../../api/axiosClient';
 import './AdminPlayers.css';
 
@@ -12,6 +13,8 @@ export default function AdminAgents() {
     const [error, setError] = useState('');
     const [showModal, setShowModal] = useState(false);
     const [editingAgent, setEditingAgent] = useState(null);
+    const [submitting, setSubmitting] = useState(false);
+    const [deletingId, setDeletingId] = useState(null);
     const [formData, setFormData] = useState({
         agent_name: '',
     });
@@ -26,7 +29,7 @@ export default function AdminAgents() {
             setLoading(true);
             const params = {};
             if (searchTerm) params.search = searchTerm;
-            
+
             const response = await axiosClient.get('/admin/agents', { params });
             setAgents(response.data.data.agents);
         } catch (err) {
@@ -56,6 +59,7 @@ export default function AdminAgents() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
+            setSubmitting(true);
             if (editingAgent) {
                 await axiosClient.put(`/admin/agents/${editingAgent.agent_id}`, formData);
             } else {
@@ -65,19 +69,24 @@ export default function AdminAgents() {
             loadAgents();
         } catch (err) {
             console.error('Save agent error:', err);
-            alert(err.response?.data?.error || 'Failed to save agent');
+            setError(err.response?.data?.error || 'Failed to save agent');
+        } finally {
+            setSubmitting(false);
         }
     };
 
     const handleDelete = async (agentId) => {
         if (!window.confirm('Are you sure you want to delete this agent?')) return;
-        
+
         try {
+            setDeletingId(agentId);
             await axiosClient.delete(`/admin/agents/${agentId}`);
             loadAgents();
         } catch (err) {
             console.error('Delete agent error:', err);
-            alert(err.response?.data?.error || 'Failed to delete agent');
+            setError(err.response?.data?.error || 'Failed to delete agent');
+        } finally {
+            setDeletingId(null);
         }
     };
 
@@ -93,7 +102,7 @@ export default function AdminAgents() {
                 </div>
 
                 <div className="admin-content">
-                    {error && <ErrorBanner message={error} />}
+                    {error && <ErrorBanner message={error} onDismiss={() => setError('')} autoDismiss={true} dismissTimeout={5000} />}
 
                     <div className="toolbar">
                         <div className="search-filters">
@@ -128,19 +137,21 @@ export default function AdminAgents() {
                                         <td>{agent._count?.players || 0}</td>
                                         <td>
                                             <div className="action-btns">
-                                                <button 
+                                                <button
                                                     className="btn-edit"
                                                     onClick={() => handleEdit(agent)}
+                                                    disabled={deletingId !== null}
                                                     title="Edit"
                                                 >
                                                     ✏️
                                                 </button>
-                                                <button 
+                                                <button
                                                     className="btn-delete"
                                                     onClick={() => handleDelete(agent.agent_id)}
+                                                    disabled={deletingId === agent.agent_id}
                                                     title="Delete"
                                                 >
-                                                    🗑️
+                                                    {deletingId === agent.agent_id ? '⏳' : '🗑️'}
                                                 </button>
                                             </div>
                                         </td>
@@ -169,18 +180,23 @@ export default function AdminAgents() {
                                     type="text"
                                     required
                                     value={formData.agent_name}
-                                    onChange={(e) => setFormData({...formData, agent_name: e.target.value})}
+                                    onChange={(e) => setFormData({ ...formData, agent_name: e.target.value })}
                                     placeholder="Enter agent name"
                                 />
                             </div>
 
                             <div className="form-actions">
-                                <button type="button" className="btn-cancel" onClick={() => setShowModal(false)}>
+                                <button type="button" className="btn-cancel" onClick={() => setShowModal(false)} disabled={submitting}>
                                     Cancel
                                 </button>
-                                <button type="submit" className="btn-submit">
-                                    {editingAgent ? 'Update' : 'Create'}
-                                </button>
+                                <Button
+                                    type="submit"
+                                    variant="primary"
+                                    loading={submitting}
+                                    disabled={submitting}
+                                >
+                                    {editingAgent ? 'Update Agent' : 'Add Agent'}
+                                </Button>
                             </div>
                         </form>
                     </Modal>

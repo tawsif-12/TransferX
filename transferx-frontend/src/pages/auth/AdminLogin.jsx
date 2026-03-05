@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import {Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import axiosClient from '../../api/axiosClient';
 import FormInput from '../../components/FormInput';
@@ -57,14 +57,14 @@ export default function AdminLogin() {
         <div className="admin-login-body">
           <div className="admin-login-icon">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
 
           <h1 className="admin-login-title">TransferX Admin</h1>
           <p className="admin-login-subtitle">Restricted Access</p>
 
-          {globalError && <ErrorBanner message={globalError} onDismiss={() => setGlobalError('')} />}
+          {globalError && <ErrorBanner message={globalError} onDismiss={() => setGlobalError('')} autoDismiss={true} dismissTimeout={5000} />}
 
           <form onSubmit={handleSubmit} className="admin-login-form">
             <FormInput
