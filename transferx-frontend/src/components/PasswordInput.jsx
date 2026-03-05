@@ -13,10 +13,18 @@ export default function PasswordInput({
   onBlur,
   onFocus,
   minLength,
-  autoComplete
+  autoComplete,
+  ariaLabel,
+  helpText
 }) {
   const [showPassword, setShowPassword] = useState(false);
   const errorId = error ? `${name}-error` : undefined;
+  const helpTextId = helpText ? `${name}-help` : undefined;
+
+  // Build aria-describedby with error and help text
+  const describedByIds = [errorId, helpTextId]
+    .filter(Boolean)
+    .join(' ') || undefined;
 
   return (
     <div className="form-group">
@@ -41,9 +49,10 @@ export default function PasswordInput({
           disabled={disabled}
           minLength={minLength}
           autoComplete={autoComplete}
+          aria-label={ariaLabel || label}
           aria-invalid={error ? 'true' : 'false'}
           aria-required={required}
-          aria-describedby={errorId}
+          aria-describedby={describedByIds}
           className={`form-input form-input--with-icon form-input--with-toggle ${error ? 'form-input--error' : ''}`}
         />
         <button
@@ -53,6 +62,7 @@ export default function PasswordInput({
           aria-label={showPassword ? 'Hide password' : 'Show password'}
           aria-pressed={showPassword}
           title={showPassword ? 'Hide password' : 'Show password'}
+          aria-controls={name}
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
             {showPassword ? (
@@ -69,6 +79,7 @@ export default function PasswordInput({
           </svg>
         </button>
       </div>
+      {helpText && <p id={helpTextId} className="form-help-text">{helpText}</p>}
       {error && (
         <p id={errorId} className="form-error" role="alert">
           {error}

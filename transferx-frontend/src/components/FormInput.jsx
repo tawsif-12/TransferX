@@ -17,10 +17,18 @@ export default function FormInput({
   maxLength,
   minLength,
   pattern,
-  title
+  title,
+  ariaLabel,
+  helpText
 }) {
   const errorId = error ? `${name}-error` : undefined;
   const descriptionId = title ? `${name}-description` : undefined;
+  const helpTextId = helpText ? `${name}-help` : undefined;
+
+  // Build aria-describedby with all relevant IDs
+  const describedByIds = [errorId, descriptionId, helpTextId]
+    .filter(Boolean)
+    .join(' ') || undefined;
 
   return (
     <div className="form-group">
@@ -48,13 +56,15 @@ export default function FormInput({
           minLength={minLength}
           pattern={pattern}
           title={title}
+          aria-label={ariaLabel || label}
           aria-invalid={error ? 'true' : 'false'}
           aria-required={required}
-          aria-describedby={[errorId, descriptionId].filter(Boolean).join(' ') || undefined}
+          aria-describedby={describedByIds}
           className={`form-input ${icon ? 'form-input--with-icon' : ''} ${error ? 'form-input--error' : ''}`}
         />
       </div>
       {title && <p id={descriptionId} className="form-description">{title}</p>}
+      {helpText && <p id={helpTextId} className="form-help-text">{helpText}</p>}
       {error && (
         <p id={errorId} className="form-error" role="alert">
           {error}

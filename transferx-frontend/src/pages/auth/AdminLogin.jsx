@@ -6,6 +6,7 @@ import FormInput from '../../components/FormInput';
 import PasswordInput from '../../components/PasswordInput';
 import ErrorBanner from '../../components/ErrorBanner';
 import { validateEmail, validateRequired } from '../../utils/validators';
+import { sanitizeEmail } from '../../utils/sanitize';
 import './AdminLogin.css';
 
 export default function AdminLogin() {
@@ -35,7 +36,10 @@ export default function AdminLogin() {
 
     setLoading(true);
     try {
-      const res = await axiosClient.post('/auth/admin-login', { email, password });
+      // Sanitize email before sending to API
+      const sanitizedEmail = sanitizeEmail(email);
+
+      const res = await axiosClient.post('/auth/admin-login', { email: sanitizedEmail, password });
       const { token, role, user } = res.data.data;
       auth.login(token, role, user);
       navigate('/admin/dashboard');

@@ -7,6 +7,7 @@ import PasswordInput from '../../components/PasswordInput';
 import PasswordStrengthBar from '../../components/PasswordStrengthBar';
 import ErrorBanner from '../../components/ErrorBanner';
 import { validateLoginForm, validateSignupForm } from '../../utils/validators';
+import { sanitizeEmail, sanitizeName, sanitizePassword } from '../../utils/sanitize';
 import './AuthPage.css';
 
 export default function AuthPage({ defaultTab = 'login' }) {
@@ -54,9 +55,12 @@ export default function AuthPage({ defaultTab = 'login' }) {
 
     setLoading(true);
     try {
+      // Sanitize input before sending to API
+      const sanitizedEmail = sanitizeEmail(loginEmail);
+
       const res = await axiosClient.post('/auth/login', {
-        email: loginEmail,
-        password: loginPassword
+        email: sanitizedEmail,
+        password: loginPassword // Don't sanitize password, keep original
       });
 
       const { token, role, user } = res.data.data;
@@ -92,10 +96,14 @@ export default function AuthPage({ defaultTab = 'login' }) {
 
     setLoading(true);
     try {
+      // Sanitize input before sending to API
+      const sanitizedName = sanitizeName(signupName);
+      const sanitizedEmail = sanitizeEmail(signupEmail);
+
       const res = await axiosClient.post('/auth/signup', {
-        fullName: signupName,
-        email: signupEmail,
-        password: signupPassword
+        fullName: sanitizedName,
+        email: sanitizedEmail,
+        password: signupPassword // Don't sanitize password, keep original
       });
 
       const { token, role, user } = res.data.data;
