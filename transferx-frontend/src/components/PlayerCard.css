@@ -1,6 +1,7 @@
 .player-card {
-  background: #ffffff;
+  background: linear-gradient(135deg, var(--card-gradient-start), var(--card-gradient-end));
   border: 1px solid var(--border);
+  border-left: 4px solid var(--card-accent);
   border-radius: var(--radius-md);
   padding: 24px 20px;
   text-align: center;

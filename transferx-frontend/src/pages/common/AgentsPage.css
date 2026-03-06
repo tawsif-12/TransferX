@@ -145,7 +145,7 @@
 }
 
 .agent-card-btn:hover {
-    background: #956ffa;
+    background: var(--purple);
 }
 
 @media (max-width: 768px) {

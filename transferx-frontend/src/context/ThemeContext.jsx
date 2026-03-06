@@ -47,6 +47,10 @@ export function ThemeProvider({ children }) {
             root.style.setProperty('--text-secondary', '#74c69d');
             root.style.setProperty('--text-muted', '#4a6741');
             root.style.setProperty('--text-inverse', '#06100d');
+            // card gradients / accent
+            root.style.setProperty('--card-gradient-start', '#ffffff');
+            root.style.setProperty('--card-gradient-end', '#f0fdf4');
+            root.style.setProperty('--card-accent', '#22c55e');
         }
     };
 

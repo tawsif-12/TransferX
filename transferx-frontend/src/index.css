@@ -7,6 +7,11 @@
   --bg-card:        #ffffff;
   --bg-elevated:    #f0fdf4;
 
+  /* Card gradients and accents */
+  --card-gradient-start: var(--bg-card);
+  --card-gradient-end: var(--bg-elevated);
+  --card-accent: var(--green-primary);
+
   /* Borders */
   --border:         rgba(34, 197, 94, 0.15);
   --border-strong:  rgba(34, 197, 94, 0.35);
@@ -26,6 +31,8 @@
 
   /* Semantic */
   --red:            #ef4444;
+  --red-light:      #fef2f2;
+  --red-dark:       #dc2626;
   --yellow:         #f59e0b;
   --blue:           #3b82f6;
   --purple:         #8b5cf6;
