@@ -28,6 +28,7 @@
   --text-secondary: #475569;
   --text-muted:     #94a3b8;
   --text-inverse:   #ffffff;
+  --text-inverse-rgb: 255,255,255; /* helpers for rgba() */
 
   /* Semantic */
   --red:            #ef4444;
