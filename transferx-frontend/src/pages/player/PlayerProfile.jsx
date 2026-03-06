@@ -3,19 +3,8 @@ import { useParams } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ErrorBanner from '../../components/ErrorBanner';
-import { fakeFetch } from '../../utils/fakeFetch';
-import { mockPlayers } from '../../mock/players';
+import axiosClient from '../../api/axiosClient';
 import './PlayerProfile.css';
-
-const getRandomBangladeshiCity = () => {
-    const cities = ['Dhaka', 'Chittagong', 'Sylhet', 'Khulna', 'Rajshahi', 'Barisal', 'Rangpur', 'Mymensingh'];
-    return cities[Math.floor(Math.random() * cities.length)];
-};
-
-const getRandomBangladeshiClub = () => {
-    const clubs = ['Bashundhara Kings', 'Dhaka Abahani', 'Mohammedan SC', 'Sheikh Russel KC', 'Chittagong Abahani', 'Sylhet FC', 'Khulna City FC'];
-    return clubs[Math.floor(Math.random() * clubs.length)];
-};
 
 export default function PlayerProfile() {
     const { id } = useParams();
@@ -24,54 +13,96 @@ export default function PlayerProfile() {
     const [error, setError] = useState('');
 
     useEffect(() => {
-        (async () => {
-            try {
-                // Mock data - get a player by ID
-                const mockPlayer = mockPlayers[parseInt(id) % mockPlayers.length] || mockPlayers[0];
-                const playerData = {
-                    ...mockPlayer,
-                    name: `${mockPlayer.first_name} ${mockPlayer.last_name}`,
-                    club: mockPlayer.current_club_name,
-                    age: new Date().getFullYear() - new Date(mockPlayer.date_of_birth).getFullYear(),
-                    jersey: Math.floor(Math.random() * 99) + 1,
-                    birthday: mockPlayer.date_of_birth,
-                    birthplace: getRandomBangladeshiCity(),
-                    height: `${(1.70 + Math.random() * 0.25).toFixed(2)}m`,
-                    weight: `${(65 + Math.random() * 20).toFixed(0)}kg`,
-                    strongFoot: ['Left', 'Right'][Math.floor(Math.random() * 2)],
-                    internationalCaps: Math.floor(Math.random() * 60) + 5,
-                    internationalGoals: mockPlayer.position === 'Forward' ? Math.floor(Math.random() * 35) + 2 : Math.floor(Math.random() * 12),
-                    seasonStats: {
-                        year: 2024,
-                        appearances: Math.floor(Math.random() * 25) + 8,
-                        goals: mockPlayer.position === 'Forward' ? Math.floor(Math.random() * 15) + 3 : Math.floor(Math.random() * 5),
-                        assists: Math.floor(Math.random() * 10) + 1,
-                        yellowCards: Math.floor(Math.random() * 8),
-                        redCards: Math.floor(Math.random() * 2),
-                        minutes: Math.floor(Math.random() * 1500) + 500,
-                    },
-                    careerStats: {
-                        appearances: Math.floor(Math.random() * 200) + 50,
-                        goals: mockPlayer.position === 'Forward' ? Math.floor(Math.random() * 100) + 15 : Math.floor(Math.random() * 30),
-                        assists: Math.floor(Math.random() * 50) + 5,
-                        yellowCards: Math.floor(Math.random() * 50) + 10,
-                        redCards: Math.floor(Math.random() * 5),
-                    },
-                    recentTransfers: [
-                        { from: mockPlayer.current_club_name, to: 'Current Club', year: 2024, fee: '€' + (Math.floor(Math.random() * 500) + 50) + 'K' },
-                        { from: getRandomBangladeshiClub(), to: mockPlayer.current_club_name, year: 2023, fee: '€' + (Math.floor(Math.random() * 300) + 30) + 'K' },
-                        { from: getRandomBangladeshiClub(), to: getRandomBangladeshiClub(), year: 2022, fee: '€' + (Math.floor(Math.random() * 200) + 20) + 'K' },
-                    ]
-                };
-                const data = await fakeFetch(playerData);
-                setPlayer(data);
-            } catch (err) {
-                setError(err.message || 'Failed to load player profile.');
-            } finally {
-                setLoading(false);
-            }
-        })();
+        loadPlayer();
     }, [id]);
+
+    const loadPlayer = async () => {
+        try {
+            setLoading(true);
+            setError('');
+
+            const response = await axiosClient.get(`/players/${id}`);
+            const apiPlayer = response.data.data || response.data;
+            
+            // Calculate age from date of birth
+            const calculateAge = (dob) => {
+                if (!dob) return 'N/A';
+                const birthDate = new Date(dob);
+                const today = new Date();
+                let age = today.getFullYear() - birthDate.getFullYear();
+                const monthDiff = today.getMonth() - birthDate.getMonth();
+                if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                    age--;
+                }
+                return age;
+            };
+
+            // Format market value
+            const formatMarketValue = (fee) => {
+                if (!fee) return '€0';
+                const value = fee * 1000000;
+                if (value >= 1000000) {
+                    return `€${(value / 1000000).toFixed(2)}M`;
+                }
+                return `€${(value / 1000).toFixed(0)}K`;
+            };
+
+            // Transform API data to component format
+            const playerData = {
+                player_id: apiPlayer.player_id,
+                name: `${apiPlayer.first_name} ${apiPlayer.last_name}`,
+                first_name: apiPlayer.first_name,
+                last_name: apiPlayer.last_name,
+                position: apiPlayer.position,
+                club: apiPlayer.current_club?.name || 'Free Agent',
+                league: apiPlayer.current_club?.league?.name || '',
+                age: calculateAge(apiPlayer.date_of_birth),
+                jersey: Math.floor(Math.random() * 99) + 1, // Random jersey for now
+                birthday: apiPlayer.date_of_birth ? new Date(apiPlayer.date_of_birth).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A',
+                birthplace: 'Bangladesh',
+                height: 'N/A', // Not available in Player table
+                weight: 'N/A', // Not available in Player table
+                strongFoot: 'Right', // Default
+                nationality: apiPlayer.nationality || 'Bangladesh',
+                internationalCaps: 0, // Not available in Player table
+                internationalGoals: 0, // Not available in Player table
+                market_value: apiPlayer.fee ? apiPlayer.fee * 1000000 : 0,
+                market_value_formatted: formatMarketValue(apiPlayer.fee),
+                rating: 0,
+                bio: `${apiPlayer.first_name} ${apiPlayer.last_name} is a professional footballer playing as ${apiPlayer.position} for ${apiPlayer.current_club?.name || 'their club'}.`,
+                seasonStats: {
+                    year: 2026,
+                    appearances: 0,
+                    goals: 0,
+                    assists: 0,
+                    yellowCards: 0,
+                    redCards: 0,
+                    minutes: 0,
+                },
+                careerStats: {
+                    appearances: 0,
+                    goals: 0,
+                    assists: 0,
+                    yellowCards: 0,
+                    redCards: 0,
+                },
+                recentTransfers: (apiPlayer.transfer_history || []).slice(0, 5).map(th => ({
+                    from: th.transfer?.from_club?.name || 'Unknown',
+                    to: th.transfer?.to_club?.name || 'Unknown',
+                    year: th.transfer?.transfer_date ? new Date(th.transfer.transfer_date).getFullYear() : 'N/A',
+                    fee: th.transfer?.transfer_fee ? `€${th.transfer.transfer_fee}M` : 'Free',
+                })),
+                contracts: apiPlayer.contracts || [],
+            };
+
+            setPlayer(playerData);
+        } catch (err) {
+            console.error('Load player error:', err);
+            setError(err.response?.data?.error || err.message || 'Failed to load player profile.');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     if (loading) return <LoadingSpinner fullPage />;
 
@@ -98,7 +129,7 @@ export default function PlayerProfile() {
                                         {player.club && <>Playing for <strong>{player.club}</strong></>}
                                     </p>
                                     <p className="profile-national">
-                                        <span className="flag">🇧🇩</span> Bangladesh National Team
+                                        <span className="flag">🇧🇩</span> {player.nationality} National Team
                                     </p>
                                 </div>
                                 <div className="profile-stats-quick">
@@ -115,7 +146,7 @@ export default function PlayerProfile() {
                                         <div className="stat-label">Int'l Caps</div>
                                     </div>
                                     <div className="stat-item">
-                                        <div className="stat-value">€{(player.market_value / 1000).toFixed(0)}K</div>
+                                        <div className="stat-value">{player.market_value_formatted}</div>
                                         <div className="stat-label">Market Value</div>
                                     </div>
                                 </div>
@@ -138,7 +169,7 @@ export default function PlayerProfile() {
                                             </div>
                                             <div className="info-item">
                                                 <span className="info-label">Nationality</span>
-                                                <span className="info-value">🇧🇩 Bangladesh</span>
+                                                <span className="info-value">🇧🇩 {player.nationality}</span>
                                             </div>
                                             <div className="info-item">
                                                 <span className="info-label">Height</span>
@@ -244,23 +275,27 @@ export default function PlayerProfile() {
                                     <div className="profile-section">
                                         <h2 className="section-title">Transfer History</h2>
                                         <div className="transfer-list">
-                                            {player.recentTransfers?.map((transfer, idx) => (
-                                                <div key={idx} className="transfer-item">
-                                                    <div className="transfer-from">
-                                                        <div className="transfer-label">From</div>
-                                                        <div className="transfer-value">{transfer.from}</div>
+                                            {player.recentTransfers && player.recentTransfers.length > 0 ? (
+                                                player.recentTransfers.map((transfer, idx) => (
+                                                    <div key={idx} className="transfer-item">
+                                                        <div className="transfer-from">
+                                                            <div className="transfer-label">From</div>
+                                                            <div className="transfer-value">{transfer.from}</div>
+                                                        </div>
+                                                        <div className="transfer-arrow">→</div>
+                                                        <div className="transfer-to">
+                                                            <div className="transfer-label">To</div>
+                                                            <div className="transfer-value">{transfer.to}</div>
+                                                        </div>
+                                                        <div className="transfer-details">
+                                                            <div className="transfer-year">{transfer.year}</div>
+                                                            <div className="transfer-fee">{transfer.fee}</div>
+                                                        </div>
                                                     </div>
-                                                    <div className="transfer-arrow">→</div>
-                                                    <div className="transfer-to">
-                                                        <div className="transfer-label">To</div>
-                                                        <div className="transfer-value">{transfer.to}</div>
-                                                    </div>
-                                                    <div className="transfer-details">
-                                                        <div className="transfer-year">{transfer.year}</div>
-                                                        <div className="transfer-fee">{transfer.fee}</div>
-                                                    </div>
-                                                </div>
-                                            ))}
+                                                ))
+                                            ) : (
+                                                <p className="no-data">No transfer history available</p>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
