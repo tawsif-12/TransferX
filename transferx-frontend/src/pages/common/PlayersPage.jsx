@@ -112,6 +112,17 @@ export default function PlayersPage() {
                             <option value="MIDFIELDER">Midfielder</option>
                             <option value="FORWARD">Forward</option>
                         </select>
+                        <select
+                            value={sortBy}
+                            onChange={(e) => setSortBy(e.target.value)}
+                            className="filter-select"
+                        >
+                            <option value="name">Sort by Name</option>
+                            <option value="value-high">Market Value: High to Low</option>
+                            <option value="value-low">Market Value: Low to High</option>
+                            <option value="age-young">Age: Youngest First</option>
+                            <option value="age-old">Age: Oldest First</option>
+                        </select>
                     </div>
                 </div>
 
