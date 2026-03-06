@@ -12,10 +12,11 @@ export default function PlayersPage() {
     const [error, setError] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
     const [filterPosition, setFilterPosition] = useState('');
+    const [sortBy, setSortBy] = useState('name');
 
     useEffect(() => {
         loadPlayers();
-    }, [searchTerm, filterPosition]);
+    }, [searchTerm, filterPosition, sortBy]);
 
     const loadPlayers = async () => {
         try {
@@ -27,13 +28,36 @@ export default function PlayersPage() {
             if (filterPosition) params.position = filterPosition;
 
             const response = await axiosClient.get('/players', { params });
-            const playersData = (response.data.data || response.data || []).map(p => ({
+            let playersData = (response.data.data || response.data || []).map(p => ({
                 ...p,
                 name: `${p.first_name} ${p.last_name}`,
                 age: p.date_of_birth ? new Date().getFullYear() - new Date(p.date_of_birth).getFullYear() : 'N/A',
                 club: p.current_club?.name || 'Free Agent',
                 market_value: p.fee ? p.fee * 1000000 : 0, // Convert from millions to actual value
             }));
+
+            // Sort players based on sortBy
+            if (sortBy === 'value-high') {
+                playersData.sort((a, b) => b.market_value - a.market_value);
+            } else if (sortBy === 'value-low') {
+                playersData.sort((a, b) => a.market_value - b.market_value);
+            } else if (sortBy === 'age-young') {
+                playersData.sort((a, b) => {
+                    const ageA = typeof a.age === 'number' ? a.age : 999;
+                    const ageB = typeof b.age === 'number' ? b.age : 999;
+                    return ageA - ageB;
+                });
+            } else if (sortBy === 'age-old') {
+                playersData.sort((a, b) => {
+                    const ageA = typeof a.age === 'number' ? a.age : 0;
+                    const ageB = typeof b.age === 'number' ? b.age : 0;
+                    return ageB - ageA;
+                });
+            } else {
+                // Default: sort by name
+                playersData.sort((a, b) => a.name.localeCompare(b.name));
+            }
+
             setPlayers(playersData);
         } catch (err) {
             console.error('Load players error:', err);
@@ -54,7 +78,18 @@ export default function PlayersPage() {
                     <p className="page-subtitle">Browse all players in Bangladesh football</p>
                 </div>
 
-                {/* Search and Filter Section */}
+                {/*     <select
+                            value={sortBy}
+                            onChange={(e) => setSortBy(e.target.value)}
+                            className="filter-select"
+                        >
+                            <option value="name">Sort by Name</option>
+                            <option value="value-high">Market Value: High to Low</option>
+                            <option value="value-low">Market Value: Low to High</option>
+                            <option value="age-young">Age: Youngest First</option>
+                            <option value="age-old">Age: Oldest First</option>
+                        </select>
+                    Search and Filter Section */}
                 <div className="filters-section">
                     <div className="search-box">
                         <input

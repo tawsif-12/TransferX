@@ -3,8 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ErrorBanner from '../../components/ErrorBanner';
-import { fakeFetch } from '../../utils/fakeFetch';
-import { mockPlayers } from '../../mock/players';
+import axiosClient from '../../api/axiosClient';
 import './UserProfile.css';
 
 export default function UserProfile() {
@@ -15,43 +14,103 @@ export default function UserProfile() {
     const [error, setError] = useState('');
 
     useEffect(() => {
-        (async () => {
-            try {
-                // Mock data - get a player to display as user profile
-                const mockUser = mockPlayers[parseInt(userId) % mockPlayers.length] || mockPlayers[0];
-                const userData = {
-                    id: userId,
-                    name: mockUser.name,
-                    position: mockUser.position,
-                    age: mockUser.age,
-                    nationalTeam: mockUser.national_team,
-                    currentClub: mockUser.club,
-                    marketValue: mockUser.market_value,
-                    jersey: mockUser.jersey,
-                    birthday: '1998-06-15',
-                    birthplace: 'São Paulo, Brazil',
-                    height: '1.88m',
-                    weight: '82kg',
-                    strongFoot: 'Right',
-                    internationalCaps: 45,
-                    internationalGoals: 12,
+        loadUserProfile();
+    }, [userId]);
+
+    const loadUserProfile = async () => {
+        try {
+            setLoading(true);
+            setError('');
+
+            // Get current user profile
+            const response = await axiosClient.get('/user/me');
+            const apiUser = response.data.data || response.data;
+
+            // Calculate age from date of birth
+            const calculateAge = (dob) => {
+                if (!dob) return 'N/A';
+                const birthDate = new Date(dob);
+                const today = new Date();
+                let age = today.getFullYear() - birthDate.getFullYear();
+                const monthDiff = today.getMonth() - birthDate.getMonth();
+                if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                    age--;
+                }
+                return age;
+            };
+
+            // Build user profile based on role
+            let userData = {
+                id: apiUser.id,
+                name: apiUser.fullName || apiUser.email,
+                email: apiUser.email,
+                role: apiUser.role,
+            };
+
+            if (apiUser.role === 'PLAYER' && apiUser.playerProfile) {
+                const profile = apiUser.playerProfile;
+                userData = {
+                    ...userData,
+                    position: profile.position || 'N/A',
+                    age: calculateAge(profile.dateOfBirth),
+                    nationalTeam: profile.nationality || 'N/A',
+                    currentClub: profile.currentClub?.name || 'Free Agent',
+                    marketValue: profile.marketValue ? `€${profile.marketValue}M` : 'N/A',
+                    jersey: 'N/A', // Not stored in database
+                    birthday: profile.dateOfBirth ? new Date(profile.dateOfBirth).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A',
+                    birthplace: 'N/A',
+                    height: profile.height ? `${profile.height}m` : 'N/A',
+                    weight: profile.weight ? `${profile.weight}kg` : 'N/A',
+                    strongFoot: profile.preferredFoot || 'N/A',
+                    internationalCaps: 0,
+                    internationalGoals: 0,
                     stats: {
-                        appearances: 234,
-                        goals: 67,
-                        assists: 23,
-                        yellowCards: 18,
-                        redCards: 2,
+                        appearances: profile.appearances || 0,
+                        goals: profile.goalsScored || 0,
+                        assists: profile.assists || 0,
+                        yellowCards: 0,
+                        redCards: 0,
                     }
                 };
-                const data = await fakeFetch(userData);
-                setUser(data);
-            } catch (err) {
-                setError(err.message || 'Failed to load user profile.');
-            } finally {
-                setLoading(false);
+            } else if (apiUser.role === 'AGENT' && apiUser.agentProfile) {
+                const profile = apiUser.agentProfile;
+                userData = {
+                    ...userData,
+                    position: 'Football Agent',
+                    agency: profile.agency || 'Independent',
+                    licenseNumber: profile.licenseNumber || 'N/A',
+                    yearsExperience: profile.yearsExperience || 0,
+                    stats: {
+                        appearances: 0,
+                        goals: 0,
+                        assists: 0,
+                        yellowCards: 0,
+                        redCards: 0,
+                    }
+                };
+            } else {
+                // Default for ADMIN or CLUB_MANAGER
+                userData = {
+                    ...userData,
+                    position: apiUser.role,
+                    stats: {
+                        appearances: 0,
+                        goals: 0,
+                        assists: 0,
+                        yellowCards: 0,
+                        redCards: 0,
+                    }
+                };
             }
-        })();
-    }, [userId]);
+
+            setUser(userData);
+        } catch (err) {
+            console.error('Load user profile error:', err);
+            setError(err.response?.data?.error || err.message || 'Failed to load user profile.');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     if (loading) return <LoadingSpinner fullPage />;
 
