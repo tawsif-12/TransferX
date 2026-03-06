@@ -1,7 +1,19 @@
+import DOMPurify from 'dompurify';
+
 /**
  * XSS Protection & Input Sanitization Utilities
  * Removes potentially dangerous HTML and scripts from user input
  */
+
+/**
+ * Determine whether a string contains HTML tags or encoded entities
+ * useful for validation checks (not just sanitization)
+ */
+export function containsHtml(value) {
+    if (!value || typeof value !== 'string') return false;
+    // look for angle brackets or encoded entities that could indicate tags
+    return /<[^>]*>|&lt;|&gt;/.test(value);
+}
 
 /**
  * Escape special HTML characters
@@ -32,18 +44,24 @@ export function sanitizeInput(input) {
         return '';
     }
 
-    // Trim whitespace
-    let sanitized = input.trim();
-
-    // Remove null bytes and control characters
-    sanitized = sanitized.replace(/[\x00-\x1F\x7F]/g, '');
-
-    // Remove script tags and event handlers
-    sanitized = sanitized.replace(/<script[^>]*>.*?<\/script>/gi, '');
-    sanitized = sanitized.replace(/on\w+\s*=/gi, '');
-    sanitized = sanitized.replace(/<iframe[^>]*>.*?<\/iframe>/gi, '');
-
-    return sanitized;
+    // Use DOMPurify for heavy-duty sanitization when running in browser
+    try {
+        // Allow no tags/attributes - just strip everything dangerous
+        const purified = DOMPurify.sanitize(input, {
+            ALLOWED_TAGS: [],
+            ALLOWED_ATTR: []
+        });
+        // fallback to trimming and additional cleanup
+        return purified.trim().replace(/[\x00-\x1F\x7F]/g, '');
+    } catch (e) {
+        // if DOMPurify isn't available (e.g. during SSR), fall back to manual regex
+        let sanitized = input.trim();
+        sanitized = sanitized.replace(/[\x00-\x1F\x7F]/g, '');
+        sanitized = sanitized.replace(/<script[^>]*>.*?<\/script>/gi, '');
+        sanitized = sanitized.replace(/on\w+\s*=/gi, '');
+        sanitized = sanitized.replace(/<iframe[^>]*>.*?<\/iframe>/gi, '');
+        return sanitized;
+    }
 }
 
 /**
@@ -119,8 +137,9 @@ export function sanitizeHtml(html) {
         return '';
     }
 
-    return html
-        .replace(/<[^>]*>/g, '') // Remove all HTML tags
+    // Use DOMPurify to strip any tags, then unescape entities
+    const clean = DOMPurify.sanitize(html, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
+    return clean
         .replace(/&lt;/g, '<')
         .replace(/&gt;/g, '>')
         .replace(/&quot;/g, '"')

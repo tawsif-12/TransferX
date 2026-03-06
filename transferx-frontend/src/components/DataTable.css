@@ -152,3 +152,40 @@
   color: var(--text-muted);
   font-size: 14px;
 }
+
+/* pagination controls */
+.data-table-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 0;
+  background: var(--bg-card);
+  border-top: 1px solid var(--border);
+}
+
+.data-table-pagination button {
+  background: none;
+  border: 1px solid var(--border);
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text-primary);
+  transition: background 0.2s ease;
+}
+
+.data-table-pagination button:hover:not(:disabled) {
+  background: var(--bg-surface);
+}
+
+.data-table-pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.data-table-pagination button.active {
+  background: var(--green-primary);
+  color: #fff;
+  border-color: var(--green-primary);
+}

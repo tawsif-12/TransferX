@@ -19,7 +19,12 @@ export async function POST(request) {
       return errorResponse(validation.errors, 400);
     }
 
-    const { email, password, fullName, role = 'PLAYER' } = validation.data;
+    let { email, password, fullName, role = 'PLAYER' } = validation.data;
+
+    // strip any leftover tags just in case (should be caught by schema)
+    const stripTags = (s) => s.replace(/<[^>]*>/g, '').replace(/&lt;|&gt;/g, '');
+    email = stripTags(email).toLowerCase();
+    fullName = stripTags(fullName);
 
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({

@@ -1,10 +1,22 @@
 import { NextResponse } from 'next/server';
+import prisma from '../../lib/prisma';
 
 export async function GET() {
+  // verify database connection
+  let dbStatus = 'unavailable';
+  try {
+    // simple raw query to ensure Prisma can reach the database
+    await prisma.$queryRaw`SELECT 1`;
+    dbStatus = 'connected';
+  } catch (err) {
+    console.error('Database connectivity check failed:', err);
+  }
+
   return NextResponse.json({
     message: 'TransferX API Server',
     version: '1.0.0',
     status: 'running',
+    db: dbStatus,
     endpoints: {
       auth: {
         signup: 'POST /api/auth/signup',

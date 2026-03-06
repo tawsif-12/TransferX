@@ -7,7 +7,7 @@ import PasswordInput from '../../components/PasswordInput';
 import PasswordStrengthBar from '../../components/PasswordStrengthBar';
 import ErrorBanner from '../../components/ErrorBanner';
 import { validateLoginForm, validateSignupForm } from '../../utils/validators';
-import { sanitizeEmail, sanitizeName, sanitizePassword } from '../../utils/sanitize';
+import { sanitizeEmail, sanitizeName, sanitizePassword, sanitizeInput } from '../../utils/sanitize';
 import './AuthPage.css';
 
 export default function AuthPage({ defaultTab = 'login' }) {
@@ -208,7 +208,7 @@ export default function AuthPage({ defaultTab = 'login' }) {
                 type="email"
                 value={loginEmail}
                 onChange={(e) => {
-                  setLoginEmail(e.target.value);
+                  setLoginEmail(sanitizeInput(e.target.value));
                   setLoginErrors({});
                 }}
                 error={loginErrors.email}
@@ -261,7 +261,8 @@ export default function AuthPage({ defaultTab = 'login' }) {
                 type="text"
                 value={signupName}
                 onChange={(e) => {
-                  setSignupName(e.target.value);
+                  // remove any HTML characters as user types
+                  setSignupName(sanitizeInput(e.target.value));
                   setSignupErrors({});
                 }}
                 error={signupErrors.fullName}
@@ -276,7 +277,7 @@ export default function AuthPage({ defaultTab = 'login' }) {
                 type="email"
                 value={signupEmail}
                 onChange={(e) => {
-                  setSignupEmail(e.target.value);
+                  setSignupEmail(sanitizeInput(e.target.value));
                   setSignupErrors({});
                 }}
                 error={signupErrors.email}

@@ -1,0 +1,13 @@
+{
+  "name": "transferx",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "install:all": "npm install --prefix transferx-backend && npm install --prefix transferx-frontend",
+    "dev": "concurrently \"npm --prefix transferx-backend run dev\" \"npm --prefix transferx-frontend run dev\"",
+    "db:setup": "cd transferx-backend && npx prisma generate && npx prisma migrate dev"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  }
+}

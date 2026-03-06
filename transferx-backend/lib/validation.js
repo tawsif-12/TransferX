@@ -5,15 +5,25 @@ import { z } from 'zod';
  */
 
 // Auth schemas
+// helper to reject angle brackets or common encoded entities
+const noHtml = z
+  .string()
+  .refine((v) => !/[<>]/.test(v), {
+    message: 'Value cannot contain HTML or script characters',
+  })
+  .refine((v) => !/&lt;|&gt;/.test(v), {
+    message: 'Value cannot contain encoded HTML entities',
+  });
+
 export const signupSchema = z.object({
-  email: z.string().email('Invalid email format'),
+  email: noHtml.email('Invalid email format'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
-  fullName: z.string().min(2, 'Full name must be at least 2 characters'),
+  fullName: noHtml.min(2, 'Full name must be at least 2 characters'),
   role: z.enum(['PLAYER', 'AGENT', 'CLUB_MANAGER']).optional(),
 });
 
 export const loginSchema = z.object({
-  email: z.string().email('Invalid email format'),
+  email: noHtml.email('Invalid email format'),
   password: z.string().min(1, 'Password is required'),
 });
 

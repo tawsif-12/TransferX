@@ -1,5 +1,11 @@
-export const validateEmail = (v) =>
-  !v ? 'Email is required' : !/\S+@\S+\.\S+/.test(v) ? 'Enter a valid email' : null;
+import { containsHtml } from './sanitize';
+
+export const validateEmail = (v) => {
+  if (!v) return 'Email is required';
+  if (containsHtml(v)) return 'Email cannot contain HTML or script tags';
+  if (!/\S+@\S+\.\S+/.test(v)) return 'Enter a valid email';
+  return null;
+};
 
 export const validateRequired = (v, label) =>
   !v?.toString().trim() ? `${label} is required` : null;
@@ -21,8 +27,16 @@ export const validateLoginForm = ({ email, password }) => {
 
 export const validateSignupForm = ({ fullName, email, password, confirm }) => {
   const e = {};
-  const nameErr = validateRequired(fullName, 'Full name') || validateMinLength(fullName?.trim(), 2, 'Full name');
+  const nameErr =
+    validateRequired(fullName, 'Full name') ||
+    validateMinLength(fullName?.trim(), 2, 'Full name');
   if (nameErr) e.fullName = nameErr;
+
+  // reject HTML/script tags in the name
+  if (!e.fullName && containsHtml(fullName)) {
+    e.fullName = 'Full name cannot contain HTML or script tags';
+  }
+
   const emailErr = validateEmail(email);
   if (emailErr) e.email = emailErr;
   const pwErr = validateRequired(password, 'Password') || validateMinLength(password, 6, 'Password');

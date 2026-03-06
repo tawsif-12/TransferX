@@ -5,6 +5,9 @@ import { generateToken } from '@/lib/auth';
 import { successResponse, errorResponse, handleRouteError } from '@/lib/response';
 import { validateData, loginSchema } from '@/lib/validation';
 
+// simple server-side sanitization helper
+const stripTags = (s = '') => s.replace(/<[^>]*>/g, '').replace(/&lt;|&gt;/g, '');
+
 export async function OPTIONS(request) {
   return new NextResponse(null, { status: 200 });
 }
@@ -19,7 +22,8 @@ export async function POST(request) {
       return errorResponse(validation.errors, 400);
     }
 
-    const { email, password } = validation.data;
+    let { email, password } = validation.data;
+    email = stripTags(email).toLowerCase();
 
     // Find user
     const user = await prisma.user.findUnique({

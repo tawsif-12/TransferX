@@ -19,6 +19,22 @@ escapeHtml(text) // Converts <, >, &, ", ' to HTML entities
 - Prevents HTML injection attacks
 - Usage: Display user data as plain text
 
+#### b) **DOMPurify Integration**
+We added [DOMPurify](https://github.com/cure53/DOMPurify) as a dependency and use it inside
+`sanitize.js` for robust, battle‑tested sanitization.  This was particularly useful for
+stripping out entire tags (`<script>`, `<iframe>`, etc.) and encoded entities before they ever
+reach the backend.
+
+Example:
+```js
+// strip everything except plain text
+DOMPurify.sanitize(input, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
+```
+
+The helper `containsHtml()` was added to aid validation logic by detecting any remaining
+angle brackets or common entity sequences.  Front‑end validators now reject names/emails
+containing HTML or script tags, showing a validation error immediately.
+
 #### b) **General Input Sanitization**
 ```javascript
 sanitizeInput(input) // Removes dangerous characters and scripts
@@ -108,6 +124,14 @@ const res = await axiosClient.post('/auth/admin-login', {
 ```
 
 ---
+
+## 1.5 Table Enhancements
+
+### Pagination Support
+The reusable `DataTable` component now includes built–in pagination controls as well as
+`pageSize`, `initialPage` and `onPageChange` props.  Search results are paginated, and the
+component resets to the first page whenever the data or filter changes.  Basic styling
+was added in `DataTable.css` to match the design system.
 
 ## 2. ARIA Attributes & Accessibility
 
