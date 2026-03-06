@@ -1,7 +1,15 @@
 import axios from 'axios';
 
 const axiosClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api',
+  // Use VITE_API_BASE_URL when defined (via .env file) otherwise fall back to
+  // the common public URL or a sensible default.  During development the
+  // backend usually listens on port 3001, so default there to avoid the
+  // "Failed to load dashboard data" network errors when the variable is
+  // missing.
+  baseURL:
+    import.meta.env.VITE_API_BASE_URL ||
+    import.meta.env.VITE_PUBLIC_API_URL ||
+    'http://localhost:3001/api',
   headers: { 'Content-Type': 'application/json' },
 });
 
