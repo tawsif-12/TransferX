@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import Navbar from '../../components/Navbar';
 import LoadingSpinner from '../../components/LoadingSpinner';
-import ErrorBanner from '../../components/ErrorBanner';
+import { useToast } from '../../context/ToastContext';
 import Modal from '../../components/Modal';
 import Button from '../../components/Button';
 import axiosClient from '../../api/axiosClient';
@@ -13,6 +13,7 @@ export default function AdminContracts() {
     const [clubs, setClubs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const toast = useToast();
     const [showModal, setShowModal] = useState(false);
     const [editingContract, setEditingContract] = useState(null);
     const [submitting, setSubmitting] = useState(false);
@@ -44,7 +45,9 @@ export default function AdminContracts() {
             setContracts(response.data.data.contracts);
         } catch (err) {
             console.error('Load contracts error:', err);
-            setError(err.response?.data?.error || 'Failed to load contracts');
+            const msg = err.response?.data?.error || 'Failed to load contracts';
+            setError(msg);
+            toast.error(msg);
         } finally {
             setLoading(false);
         }
@@ -103,14 +106,18 @@ export default function AdminContracts() {
             setSubmitting(true);
             if (editingContract) {
                 await axiosClient.put(`/admin/contracts/${editingContract.contract_id}`, formData);
+                toast.success('Contract updated successfully');
             } else {
                 await axiosClient.post('/admin/contracts', formData);
+                toast.success('Contract created successfully');
             }
             setShowModal(false);
             loadContracts();
         } catch (err) {
             console.error('Save contract error:', err);
-            setError(err.response?.data?.error || 'Failed to save contract');
+            const msg = err.response?.data?.error || 'Failed to save contract';
+            setError(msg);
+            toast.error(msg);
         } finally {
             setSubmitting(false);
         }
@@ -122,10 +129,13 @@ export default function AdminContracts() {
         try {
             setDeletingId(contractId);
             await axiosClient.delete(`/admin/contracts/${contractId}`);
+            toast.success('Contract deleted');
             loadContracts();
         } catch (err) {
             console.error('Delete contract error:', err);
-            setError(err.response?.data?.error || 'Failed to delete contract');
+            const msg = err.response?.data?.error || 'Failed to delete contract';
+            setError(msg);
+            toast.error(msg);
         } finally {
             setDeletingId(null);
         }
@@ -143,7 +153,9 @@ export default function AdminContracts() {
                 </div>
 
                 <div className="admin-content">
-                    {error && <ErrorBanner message={error} onDismiss={() => setError('')} autoDismiss={true} dismissTimeout={5000} />}
+                    {error && (
+                        <div style={{ padding: '20px', textAlign: 'center' }}><p>{error}</p></div>
+                    )}
 
                     <div className="toolbar">
                         <div className="search-filters">

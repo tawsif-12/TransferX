@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import Navbar from '../../components/Navbar';
 import DataTable from '../../components/DataTable';
 import LoadingSpinner from '../../components/LoadingSpinner';
-import ErrorBanner from '../../components/ErrorBanner';
+import { useToast } from '../../context/ToastContext';
 import axiosClient from '../../api/axiosClient';
 import './PlayersPage.css';
 
@@ -12,6 +12,7 @@ export default function PlayersPage() {
     const [error, setError] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
     const [filterPosition, setFilterPosition] = useState('');
+    const toast = useToast();
 
     useEffect(() => {
         loadPlayers();
@@ -37,7 +38,9 @@ export default function PlayersPage() {
             setPlayers(playersData);
         } catch (err) {
             console.error('Load players error:', err);
-            setError(err.response?.data?.error || err.message || 'Failed to load players.');
+            const msg = err.response?.data?.error || err.message || 'Failed to load players.';
+            setError(msg);
+            toast.error(msg);
         } finally {
             setLoading(false);
         }
@@ -81,8 +84,8 @@ export default function PlayersPage() {
                 </div>
 
                 {error ? (
-                    <div style={{ padding: '40px' }}>
-                        <ErrorBanner message={error} onDismiss={() => setError('')} autoDismiss={true} dismissTimeout={5000} />
+                    <div style={{ padding: '40px', textAlign: 'center' }}>
+                        <p>{error}</p>
                     </div>
                 ) : (
                     <div className="page-content">

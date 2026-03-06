@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
 import LoadingSpinner from '../../components/LoadingSpinner';
-import ErrorBanner from '../../components/ErrorBanner';
+import { useToast } from '../../context/ToastContext';
 import axiosClient from '../../api/axiosClient';
 import './AdminDashboard.css';
 
@@ -11,6 +11,7 @@ export default function AdminDashboard() {
     const [analytics, setAnalytics] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const toast = useToast();
 
     useEffect(() => {
         loadDashboard();
@@ -23,7 +24,9 @@ export default function AdminDashboard() {
             setAnalytics(response.data.data);
         } catch (err) {
             console.error('Dashboard error:', err);
-            setError(err.response?.data?.error || 'Failed to load dashboard');
+            const msg = err.response?.data?.error || 'Failed to load dashboard';
+            setError(msg);
+            toast.error(msg);
             if (err.response?.status === 401 || err.response?.status === 403) {
                 navigate('/login');
             }
@@ -44,8 +47,8 @@ export default function AdminDashboard() {
                 </div>
 
                 {error && (
-                    <div className="admin-content">
-                        <ErrorBanner message={error} onDismiss={() => setError('')} autoDismiss={true} dismissTimeout={5000} />
+                    <div className="admin-content" style={{ textAlign: 'center', padding: '20px' }}>
+                        <p>{error}</p>
                     </div>
                 )}
 

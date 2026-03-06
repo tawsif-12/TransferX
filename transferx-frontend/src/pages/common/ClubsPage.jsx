@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import Navbar from '../../components/Navbar';
 import LoadingSpinner from '../../components/LoadingSpinner';
-import ErrorBanner from '../../components/ErrorBanner';
+import { useToast } from '../../context/ToastContext';
 import { fakeFetch } from '../../utils/fakeFetch';
 import { mockClubs } from '../../mock/clubs';
 import './ClubsPage.css';
@@ -10,6 +10,7 @@ export default function ClubsPage() {
     const [clubs, setClubs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const toast = useToast();
 
     useEffect(() => {
         (async () => {
@@ -17,7 +18,9 @@ export default function ClubsPage() {
                 const data = await fakeFetch(mockClubs);
                 setClubs(data);
             } catch (err) {
-                setError(err.message || 'Failed to load clubs.');
+                const msg = err.message || 'Failed to load clubs.';
+                setError(msg);
+                toast.error(msg);
             } finally {
                 setLoading(false);
             }
@@ -36,8 +39,8 @@ export default function ClubsPage() {
                 </div>
 
                 {error ? (
-                    <div style={{ padding: '40px' }}>
-                        <ErrorBanner message={error} onDismiss={() => setError('')} autoDismiss={true} dismissTimeout={5000} />
+                    <div style={{ padding: '40px', textAlign: 'center' }}>
+                        <p>{error}</p>
                     </div>
                 ) : (
                     <div className="page-content">

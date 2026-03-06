@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
 import LoadingSpinner from '../../components/LoadingSpinner';
-import ErrorBanner from '../../components/ErrorBanner';
+import { useToast } from '../../context/ToastContext';
 import Modal from '../../components/Modal';
 import Button from '../../components/Button';
 import axiosClient from '../../api/axiosClient';
@@ -14,6 +14,7 @@ export default function AdminPlayers() {
     const [clubs, setClubs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const toast = useToast();
     const [showModal, setShowModal] = useState(false);
     const [editingPlayer, setEditingPlayer] = useState(null);
     const [submitting, setSubmitting] = useState(false);
@@ -48,7 +49,9 @@ export default function AdminPlayers() {
             setPlayers(response.data.data.players);
         } catch (err) {
             console.error('Load players error:', err);
-            setError(err.response?.data?.error || 'Failed to load players');
+            const msg = err.response?.data?.error || 'Failed to load players';
+            setError(msg);
+            toast.error(msg);
         } finally {
             setLoading(false);
         }
@@ -97,14 +100,18 @@ export default function AdminPlayers() {
             setSubmitting(true);
             if (editingPlayer) {
                 await axiosClient.put(`/admin/players/${editingPlayer.player_id}`, formData);
+                toast.success('Player updated successfully');
             } else {
                 await axiosClient.post('/admin/players', formData);
+                toast.success('Player added successfully');
             }
             setShowModal(false);
             loadPlayers();
         } catch (err) {
             console.error('Save player error:', err);
-            setError(err.response?.data?.error || 'Failed to save player');
+            const msg = err.response?.data?.error || 'Failed to save player';
+            setError(msg);
+            toast.error(msg);
         } finally {
             setSubmitting(false);
         }
@@ -116,10 +123,13 @@ export default function AdminPlayers() {
         try {
             setDeletingId(playerId);
             await axiosClient.delete(`/admin/players/${playerId}`);
+            toast.success('Player deleted');
             loadPlayers();
         } catch (err) {
             console.error('Delete player error:', err);
-            setError(err.response?.data?.error || 'Failed to delete player');
+            const msg = err.response?.data?.error || 'Failed to delete player';
+            setError(msg);
+            toast.error(msg);
         } finally {
             setDeletingId(null);
         }
@@ -141,7 +151,9 @@ export default function AdminPlayers() {
                 </div>
 
                 <div className="admin-content">
-                    {error && <ErrorBanner message={error} onDismiss={() => setError('')} autoDismiss={true} dismissTimeout={5000} />}
+                    {error && (
+                        <div style={{ padding: '20px', textAlign: 'center' }}><p>{error}</p></div>
+                    )}
                     {/* Toolbar */}
                     <div className="toolbar">
                         <div className="search-filters">

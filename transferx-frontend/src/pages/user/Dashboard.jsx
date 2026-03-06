@@ -3,7 +3,7 @@ import Navbar from '../../components/Navbar';
 import StatCard from '../../components/StatCard';
 import TransferCard from '../../components/TransferCard';
 import LoadingSpinner from '../../components/LoadingSpinner';
-import ErrorBanner from '../../components/ErrorBanner';
+import { useToast } from '../../context/ToastContext';
 import { fakeFetch } from '../../utils/fakeFetch';
 import { mockStats } from '../../mock/stats';
 import { mockTransfers } from '../../mock/transfers';
@@ -14,6 +14,7 @@ export default function Dashboard() {
   const [recentTransfers, setRecentTransfers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const toast = useToast();
 
   useEffect(() => {
     (async () => {
@@ -30,7 +31,9 @@ export default function Dashboard() {
         setStats(statsData);
         setRecentTransfers(transfersData);
       } catch (err) {
-        setError(err.message || 'Failed to load dashboard data.');
+        const msg = err.message || 'Failed to load dashboard data.';
+        setError(msg);
+        toast.error(msg);
       } finally {
         setLoading(false);
       }
@@ -41,8 +44,8 @@ export default function Dashboard() {
   if (error) return (
     <div>
       <Navbar />
-      <div style={{ padding: '40px' }}>
-        <ErrorBanner message={error} onDismiss={() => setError('')} autoDismiss={true} dismissTimeout={5000} />
+      <div style={{ padding: '40px', textAlign: 'center' }}>
+        <p>{error}</p>
       </div>
     </div>
   );

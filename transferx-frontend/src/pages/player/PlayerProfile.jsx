@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
 import LoadingSpinner from '../../components/LoadingSpinner';
-import ErrorBanner from '../../components/ErrorBanner';
+import { useToast } from '../../context/ToastContext';
 import axiosClient from '../../api/axiosClient';
 import './PlayerProfile.css';
 
@@ -11,6 +11,7 @@ export default function PlayerProfile() {
     const [player, setPlayer] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const toast = useToast();
 
     useEffect(() => {
         loadPlayer();
@@ -98,7 +99,9 @@ export default function PlayerProfile() {
             setPlayer(playerData);
         } catch (err) {
             console.error('Load player error:', err);
-            setError(err.response?.data?.error || err.message || 'Failed to load player profile.');
+            const msg = err.response?.data?.error || err.message || 'Failed to load player profile.';
+            setError(msg);
+            toast.error(msg);
         } finally {
             setLoading(false);
         }
@@ -111,8 +114,8 @@ export default function PlayerProfile() {
             <Navbar />
             <div className="player-profile">
                 {error ? (
-                    <div style={{ padding: '40px' }}>
-                        <ErrorBanner message={error} onDismiss={() => setError('')} autoDismiss={true} dismissTimeout={5000} />
+                    <div style={{ padding: '40px', textAlign: 'center' }}>
+                        <p>{error}</p>
                     </div>
                 ) : player ? (
                     <>

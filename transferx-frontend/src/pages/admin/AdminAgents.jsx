@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import Navbar from '../../components/Navbar';
 import LoadingSpinner from '../../components/LoadingSpinner';
-import ErrorBanner from '../../components/ErrorBanner';
+import { useToast } from '../../context/ToastContext';
 import Modal from '../../components/Modal';
 import Button from '../../components/Button';
 import axiosClient from '../../api/axiosClient';
@@ -11,6 +11,7 @@ export default function AdminAgents() {
     const [agents, setAgents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const toast = useToast();
     const [showModal, setShowModal] = useState(false);
     const [editingAgent, setEditingAgent] = useState(null);
     const [submitting, setSubmitting] = useState(false);
@@ -34,7 +35,9 @@ export default function AdminAgents() {
             setAgents(response.data.data.agents);
         } catch (err) {
             console.error('Load agents error:', err);
-            setError(err.response?.data?.error || 'Failed to load agents');
+            const msg = err.response?.data?.error || 'Failed to load agents';
+            setError(msg);
+            toast.error(msg);
         } finally {
             setLoading(false);
         }
@@ -62,14 +65,18 @@ export default function AdminAgents() {
             setSubmitting(true);
             if (editingAgent) {
                 await axiosClient.put(`/admin/agents/${editingAgent.agent_id}`, formData);
+                toast.success('Agent updated successfully');
             } else {
                 await axiosClient.post('/admin/agents', formData);
+                toast.success('Agent added successfully');
             }
             setShowModal(false);
             loadAgents();
         } catch (err) {
             console.error('Save agent error:', err);
-            setError(err.response?.data?.error || 'Failed to save agent');
+            const msg = err.response?.data?.error || 'Failed to save agent';
+            setError(msg);
+            toast.error(msg);
         } finally {
             setSubmitting(false);
         }
@@ -81,10 +88,13 @@ export default function AdminAgents() {
         try {
             setDeletingId(agentId);
             await axiosClient.delete(`/admin/agents/${agentId}`);
+            toast.success('Agent deleted');
             loadAgents();
         } catch (err) {
             console.error('Delete agent error:', err);
-            setError(err.response?.data?.error || 'Failed to delete agent');
+            const msg = err.response?.data?.error || 'Failed to delete agent';
+            setError(msg);
+            toast.error(msg);
         } finally {
             setDeletingId(null);
         }
@@ -102,7 +112,9 @@ export default function AdminAgents() {
                 </div>
 
                 <div className="admin-content">
-                    {error && <ErrorBanner message={error} onDismiss={() => setError('')} autoDismiss={true} dismissTimeout={5000} />}
+                    {error && (
+                        <div style={{ padding: '20px', textAlign: 'center' }}><p>{error}</p></div>
+                    )}
 
                     <div className="toolbar">
                         <div className="search-filters">

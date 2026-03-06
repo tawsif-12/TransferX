@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
 import axiosClient from '../../api/axiosClient';
 import FormInput from '../../components/FormInput';
 import PasswordInput from '../../components/PasswordInput';
-import ErrorBanner from '../../components/ErrorBanner';
 import { validateEmail, validateRequired } from '../../utils/validators';
 import { sanitizeEmail } from '../../utils/sanitize';
 import './AdminLogin.css';
@@ -16,12 +16,11 @@ export default function AdminLogin() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
-  const [globalError, setGlobalError] = useState('');
   const [loading, setLoading] = useState(false);
+  const toast = useToast();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setGlobalError('');
 
     const validationErrors = {};
     const emailErr = validateEmail(email);
@@ -41,11 +40,12 @@ export default function AdminLogin() {
 
       const res = await axiosClient.post('/auth/admin-login', { email: sanitizedEmail, password });
       const { token, role, user } = res.data.data;
+      toast.success('Welcome back, admin!');
       auth.login(token, role, user);
       navigate('/admin/dashboard');
     } catch (err) {
       const errorMessage = err.response?.data?.error || err.message || 'Login failed';
-      setGlobalError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -68,7 +68,6 @@ export default function AdminLogin() {
           <h1 className="admin-login-title">TransferX Admin</h1>
           <p className="admin-login-subtitle">Restricted Access</p>
 
-          {globalError && <ErrorBanner message={globalError} onDismiss={() => setGlobalError('')} autoDismiss={true} dismissTimeout={5000} />}
 
           <form onSubmit={handleSubmit} className="admin-login-form">
             <FormInput

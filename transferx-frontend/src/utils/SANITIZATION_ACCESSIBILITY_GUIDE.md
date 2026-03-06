@@ -167,11 +167,14 @@ Example:
 - `aria-controls={name}` - Links toggle to password field
 - `aria-describedby` - Links errors to input
 
-#### **ErrorBanner Component**
-- `role="alert"` - Announces errors immediately
-- `aria-live="assertive"` - Marks as urgent
-- `aria-atomic="true"` - Announces full message
-- Escape key dismissal support
+#### **Toast Notification Component**
+- `role="alert"` or `status` - Announces messages to assistive tech
+- `aria-live="polite"` for non-critical info, `assertive` for errors
+- `aria-atomic="true"` - Ensures full message announced
+- Auto‑dismiss timer with user control via close button
+- Appears in top-right corner and centers on mobile for visibility
+
+*(The previous ErrorBanner component has been deprecated in favor of toasts.)*
 
 ### ID Linking Structure
 Every form field has linked error messages:

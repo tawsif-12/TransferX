@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
 import axiosClient from '../../api/axiosClient';
 import FormInput from '../../components/FormInput';
 import PasswordInput from '../../components/PasswordInput';
 import PasswordStrengthBar from '../../components/PasswordStrengthBar';
-import ErrorBanner from '../../components/ErrorBanner';
 import { validateLoginForm, validateSignupForm } from '../../utils/validators';
 import { sanitizeEmail, sanitizeName, sanitizePassword, sanitizeInput } from '../../utils/sanitize';
 import './AuthPage.css';
@@ -16,8 +16,8 @@ export default function AuthPage({ defaultTab = 'login' }) {
 
   const [activeTab, setActiveTab] = useState(defaultTab);
   const [loading, setLoading] = useState(false);
-  const [globalError, setGlobalError] = useState('');
   const [success, setSuccess] = useState(null);
+  const toast = useToast();
 
   // Login state
   const [loginEmail, setLoginEmail] = useState('');
@@ -38,14 +38,12 @@ export default function AuthPage({ defaultTab = 'login' }) {
   const switchTab = (tab) => {
     setActiveTab(tab);
     navigate(tab === 'login' ? '/login' : '/register', { replace: true });
-    setGlobalError('');
     setLoginErrors({});
     setSignupErrors({});
   };
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setGlobalError('');
 
     const errors = validateLoginForm({ email: loginEmail, password: loginPassword });
     if (Object.keys(errors).length > 0) {
@@ -64,7 +62,9 @@ export default function AuthPage({ defaultTab = 'login' }) {
       });
 
       const { token, role, user } = res.data.data;
-      setSuccess(`Welcome back, ${user.name.split(' ')[0]}!`);
+      const successMsg = `Welcome back, ${user.name.split(' ')[0]}!`;
+      setSuccess(successMsg);
+      toast.success(successMsg);
       auth.login(token, role, user);
 
       setTimeout(() => {
@@ -73,7 +73,7 @@ export default function AuthPage({ defaultTab = 'login' }) {
       }, 1500);
     } catch (err) {
       const errorMessage = err.response?.data?.error || err.message || 'Login failed';
-      setGlobalError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -81,7 +81,6 @@ export default function AuthPage({ defaultTab = 'login' }) {
 
   const handleSignup = async (e) => {
     e.preventDefault();
-    setGlobalError('');
 
     const errors = validateSignupForm({
       fullName: signupName,
@@ -107,7 +106,9 @@ export default function AuthPage({ defaultTab = 'login' }) {
       });
 
       const { token, role, user } = res.data.data;
-      setSuccess(`Welcome to TransferX, ${user.name.split(' ')[0]}!`);
+      const successMsg = `Welcome to TransferX, ${user.name.split(' ')[0]}!`;
+      setSuccess(successMsg);
+      toast.success(successMsg);
       auth.login(token, role, user);
 
       setTimeout(() => {
@@ -115,7 +116,7 @@ export default function AuthPage({ defaultTab = 'login' }) {
       }, 1500);
     } catch (err) {
       const errorMessage = err.response?.data?.error || err.message || 'Registration failed';
-      setGlobalError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -198,7 +199,6 @@ export default function AuthPage({ defaultTab = 'login' }) {
             </button>
           </div>
 
-          {globalError && <ErrorBanner message={globalError} onDismiss={() => setGlobalError('')} autoDismiss={true} dismissTimeout={5000} />}
 
           {activeTab === 'login' ? (
             <form onSubmit={handleLogin} className="auth-form">

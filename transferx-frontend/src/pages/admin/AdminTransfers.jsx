@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import Navbar from '../../components/Navbar';
 import LoadingSpinner from '../../components/LoadingSpinner';
-import ErrorBanner from '../../components/ErrorBanner';
+import { useToast } from '../../context/ToastContext';
 import Modal from '../../components/Modal';
 import Button from '../../components/Button';
 import axiosClient from '../../api/axiosClient';
@@ -13,6 +13,7 @@ export default function AdminTransfers() {
     const [clubs, setClubs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const toast = useToast();
     const [showModal, setShowModal] = useState(false);
     const [editingTransfer, setEditingTransfer] = useState(null);
     const [submitting, setSubmitting] = useState(false);
@@ -45,7 +46,9 @@ export default function AdminTransfers() {
             setTransfers(response.data.data.transfers);
         } catch (err) {
             console.error('Load transfers error:', err);
-            setError(err.response?.data?.error || 'Failed to load transfers');
+            const msg = err.response?.data?.error || 'Failed to load transfers';
+            setError(msg);
+            toast.error(msg);
         } finally {
             setLoading(false);
         }
@@ -101,14 +104,18 @@ export default function AdminTransfers() {
             setSubmitting(true);
             if (editingTransfer) {
                 await axiosClient.put(`/admin/transfers/${editingTransfer.transfer_id}`, formData);
+                toast.success('Transfer updated successfully');
             } else {
                 await axiosClient.post('/admin/transfers', formData);
+                toast.success('Transfer recorded successfully');
             }
             setShowModal(false);
             loadTransfers();
         } catch (err) {
             console.error('Save transfer error:', err);
-            setError(err.response?.data?.error || 'Failed to save transfer');
+            const msg = err.response?.data?.error || 'Failed to save transfer';
+            setError(msg);
+            toast.error(msg);
         } finally {
             setSubmitting(false);
         }
@@ -120,10 +127,13 @@ export default function AdminTransfers() {
         try {
             setDeletingId(transferId);
             await axiosClient.delete(`/admin/transfers/${transferId}`);
+            toast.success('Transfer deleted');
             loadTransfers();
         } catch (err) {
             console.error('Delete transfer error:', err);
-            setError(err.response?.data?.error || 'Failed to delete transfer');
+            const msg = err.response?.data?.error || 'Failed to delete transfer';
+            setError(msg);
+            toast.error(msg);
         } finally {
             setDeletingId(null);
         }
@@ -141,7 +151,9 @@ export default function AdminTransfers() {
                 </div>
 
                 <div className="admin-content">
-                    {error && <ErrorBanner message={error} onDismiss={() => setError('')} autoDismiss={true} dismissTimeout={5000} />}
+                    {error && (
+                        <div style={{ padding: '20px', textAlign: 'center' }}><p>{error}</p></div>
+                    )}
 
                     <div className="toolbar">
                         <div className="search-filters">

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
 import LoadingSpinner from '../../components/LoadingSpinner';
-import ErrorBanner from '../../components/ErrorBanner';
+import { useToast } from '../../context/ToastContext';
 import { fakeFetch } from '../../utils/fakeFetch';
 import { mockPlayers } from '../../mock/players';
 import './UserProfile.css';
@@ -13,6 +13,7 @@ export default function UserProfile() {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const toast = useToast();
 
     useEffect(() => {
         (async () => {
@@ -46,7 +47,9 @@ export default function UserProfile() {
                 const data = await fakeFetch(userData);
                 setUser(data);
             } catch (err) {
-                setError(err.message || 'Failed to load user profile.');
+                const msg = err.message || 'Failed to load user profile.';
+                setError(msg);
+                toast.error(msg);
             } finally {
                 setLoading(false);
             }
@@ -60,8 +63,8 @@ export default function UserProfile() {
             <Navbar />
             <div className="user-profile">
                 {error ? (
-                    <div style={{ padding: '40px' }}>
-                        <ErrorBanner message={error} onDismiss={() => setError('')} autoDismiss={true} dismissTimeout={5000} />
+                    <div style={{ padding: '40px', textAlign: 'center' }}>
+                        <p>{error}</p>
                     </div>
                 ) : user ? (
                     <>

@@ -8,6 +8,19 @@
   z-index: 9999;
 }
 
+/* center toasts on narrow screens */
+@media (max-width: 600px) {
+  .toast-container {
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    top: 10px;
+  }
+  .toast {
+    max-width: 90%;
+  }
+}
+
 .toast {
   min-width: 240px;
   max-width: 360px;
