@@ -1,28 +1,74 @@
-export const formatCurrency = (amount) => {
-  if (amount === 0) return 'Free';
-  return new Intl.NumberFormat('en-GB', {
-    style: 'currency', currency: 'EUR',
-    notation: 'compact', maximumFractionDigits: 1,
-  }).format(amount);
-};
+/**
+ * Format currency values
+ */
+export function formatCurrency(amount) {
+  if (amount === null || amount === undefined || amount === 0) {
+    return 'Free';
+  }
+  
+  const num = parseFloat(amount);
+  
+  if (num >= 1000000) {
+    return `€${(num / 1000000).toFixed(2)}M`;
+  } else if (num >= 1000) {
+    return `€${(num / 1000).toFixed(0)}K`;
+  }
+  
+  return `€${num.toLocaleString()}`;
+}
 
-export const formatDate = (dateStr) =>
-  new Date(dateStr).toLocaleDateString('en-GB', {
-    day: '2-digit', month: 'short', year: 'numeric',
-  });
+/**
+ * Format date
+ */
+export function formatDate(dateString) {
+  if (!dateString) return 'N/A';
+  
+  try {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  } catch (error) {
+    return 'Invalid Date';
+  }
+}
 
-export const formatSalary = (weekly) =>
-  `€${new Intl.NumberFormat('en-GB').format(weekly)}/wk`;
+/**
+ * Get initials from first and last name
+ */
+export function getInitials(firstName, lastName) {
+  if (!firstName && !lastName) return '?';
+  
+  const first = firstName ? firstName.charAt(0).toUpperCase() : '';
+  const last = lastName ? lastName.charAt(0).toUpperCase() : '';
+  
+  return first + last || '?';
+}
 
-export const getInitials = (firstName, lastName) =>
-  `${firstName?.[0] ?? ''}${lastName?.[0] ?? ''}`.toUpperCase();
+/**
+ * Format numbers with commas
+ */
+export function formatNumber(num) {
+  if (num === null || num === undefined) return '0';
+  return num.toLocaleString();
+}
 
-export const getPositionColor = (position) => ({
-  Goalkeeper: '#f59e0b',
-  Defender:   '#60a5fa',
-  Midfielder: '#a78bfa',
-  Forward:    '#f87171',
-}[position] ?? '#6b7280');
-
-export const isContractActive = (endDate) =>
-  new Date(endDate) > new Date();
+/**
+ * Calculate age from date of birth
+ */
+export function calculateAge(dateOfBirth) {
+  if (!dateOfBirth) return null;
+  
+  const today = new Date();
+  const birthDate = new Date(dateOfBirth);
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+  
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  
+  return age;
+}

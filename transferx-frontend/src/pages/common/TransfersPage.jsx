@@ -2,8 +2,7 @@ import { useState, useEffect } from 'react';
 import Navbar from '../../components/Navbar';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { useToast } from '../../context/ToastContext';
-import { fakeFetch } from '../../utils/fakeFetch';
-import { mockTransfers } from '../../mock/transfers';
+import axiosClient from '../../api/axiosClient';
 import './TransfersPage.css';
 
 export default function TransfersPage() {
@@ -13,19 +12,23 @@ export default function TransfersPage() {
     const toast = useToast();
 
     useEffect(() => {
-        (async () => {
-            try {
-                const data = await fakeFetch(mockTransfers);
-                setTransfers(data);
-            } catch (err) {
-                const msg = err.message || 'Failed to load transfers.';
-                setError(msg);
-                toast.error(msg);
-            } finally {
-                setLoading(false);
-            }
-        })();
+        loadTransfers();
     }, []);
+
+    const loadTransfers = async () => {
+        try {
+            setLoading(true);
+            const response = await axiosClient.get('/transfers');
+            setTransfers(response.data.data || []);
+        } catch (err) {
+            console.error('Transfers error:', err);
+            const msg = err.response?.data?.error || 'Failed to load transfers.';
+            setError(msg);
+            toast.error(msg);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     if (loading) return <LoadingSpinner fullPage />;
 
@@ -50,48 +53,56 @@ export default function TransfersPage() {
                 ) : (
                     <div className="page-content">
                         <div className="transfers-list">
-                            {transfers.map((transfer) => (
-                                <div key={transfer.transfer_id} className="transfer-card">
-                                    <div className="transfer-player">
-                                        <div className="player-avatar">⚽</div>
-                                        <div className="player-info">
-                                            <h3 className="player-name">{transfer.player_name}</h3>
-                                            <span className="transfer-type">{transfer.transfer_type}</span>
-                                        </div>
-                                    </div>
+                            {transfers.map((transfer) => {
+                                const playerName = transfer.player_name || 
+                                    (transfer.player ? `${transfer.player.first_name} ${transfer.player.last_name}` : 'Unknown');
+                                const fromClubName = transfer.from_club?.name || transfer.from_club || 'Unknown';
+                                const toClubName = transfer.to_club?.name || transfer.to_club || 'Unknown';
+                                const fee = transfer.fee !== undefined ? transfer.fee : transfer.transfer_fee;
 
-                                    <div className="transfer-flow">
-                                        <div className="transfer-club from">
-                                            <div className="club-badge">🛡️</div>
-                                            <div>
-                                                <div className="label">From</div>
-                                                <div className="club-name">{transfer.from_club}</div>
+                                return (
+                                    <div key={transfer.transfer_id} className="transfer-card">
+                                        <div className="transfer-player">
+                                            <div className="player-avatar">⚽</div>
+                                            <div className="player-info">
+                                                <h3 className="player-name">{playerName}</h3>
+                                                <span className="transfer-type">{transfer.transfer_type}</span>
                                             </div>
                                         </div>
-                                        <div className="transfer-arrow">→</div>
-                                        <div className="transfer-club to">
-                                            <div className="club-badge">🛡️</div>
-                                            <div>
-                                                <div className="label">To</div>
-                                                <div className="club-name">{transfer.to_club}</div>
+
+                                        <div className="transfer-flow">
+                                            <div className="transfer-club from">
+                                                <div className="club-badge">🛡️</div>
+                                                <div>
+                                                    <div className="label">From</div>
+                                                    <div className="club-name">{fromClubName}</div>
+                                                </div>
+                                            </div>
+                                            <div className="transfer-arrow">→</div>
+                                            <div className="transfer-club to">
+                                                <div className="club-badge">🛡️</div>
+                                                <div>
+                                                    <div className="label">To</div>
+                                                    <div className="club-name">{toClubName}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="transfer-details">
+                                            <div className="detail">
+                                                <span className="label">Transfer Fee</span>
+                                                <span className="value">
+                                                    {fee > 0 ? `€${fee.toLocaleString()}` : 'Free Transfer'}
+                                                </span>
+                                            </div>
+                                            <div className="detail">
+                                                <span className="label">Date</span>
+                                                <span className="value">{formatDate(transfer.transfer_date)}</span>
                                             </div>
                                         </div>
                                     </div>
-
-                                    <div className="transfer-details">
-                                        <div className="detail">
-                                            <span className="label">Transfer Fee</span>
-                                            <span className="value">
-                                                {transfer.fee > 0 ? `€${transfer.fee.toLocaleString()}` : 'Free Transfer'}
-                                            </span>
-                                        </div>
-                                        <div className="detail">
-                                            <span className="label">Date</span>
-                                            <span className="value">{formatDate(transfer.transfer_date)}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </div>
                 )}

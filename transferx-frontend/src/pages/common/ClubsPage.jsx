@@ -2,8 +2,7 @@ import { useState, useEffect } from 'react';
 import Navbar from '../../components/Navbar';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { useToast } from '../../context/ToastContext';
-import { fakeFetch } from '../../utils/fakeFetch';
-import { mockClubs } from '../../mock/clubs';
+import axiosClient from '../../api/axiosClient';
 import './ClubsPage.css';
 
 export default function ClubsPage() {
@@ -13,19 +12,23 @@ export default function ClubsPage() {
     const toast = useToast();
 
     useEffect(() => {
-        (async () => {
-            try {
-                const data = await fakeFetch(mockClubs);
-                setClubs(data);
-            } catch (err) {
-                const msg = err.message || 'Failed to load clubs.';
-                setError(msg);
-                toast.error(msg);
-            } finally {
-                setLoading(false);
-            }
-        })();
+        loadClubs();
     }, []);
+
+    const loadClubs = async () => {
+        try {
+            setLoading(true);
+            const response = await axiosClient.get('/clubs');
+            setClubs(response.data.data || []);
+        } catch (err) {
+            const msg = err.response?.data?.error || 'Failed to load clubs.';
+            console.error('Clubs error:', err);
+            setError(msg);
+            toast.error(msg);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     if (loading) return <LoadingSpinner fullPage />;
 
@@ -45,33 +48,41 @@ export default function ClubsPage() {
                 ) : (
                     <div className="page-content">
                         <div className="clubs-grid">
-                            {clubs.map((club) => (
-                                <div key={club.club_id} className="club-card">
-                                    <div className="club-card-header">
-                                        <div className="club-logo">🛡️</div>
-                                        <h3 className="club-name">{club.name}</h3>
+                            {clubs.map((club) => {
+                                const leagueName = club.league?.name || club.league_name || 'N/A';
+                                const foundedYear = club.founded_year || 'N/A';
+                                const budget = club.budget || 0;
+
+                                return (
+                                    <div key={club.club_id} className="club-card">
+                                        <div className="club-card-header">
+                                            <div className="club-logo">🛡️</div>
+                                            <h3 className="club-name">{club.name}</h3>
+                                        </div>
+                                        <div className="club-details">
+                                            <div className="detail-row">
+                                                <span className="detail-label">League</span>
+                                                <span className="detail-value">{leagueName}</span>
+                                            </div>
+                                            <div className="detail-row">
+                                                <span className="detail-label">Founded</span>
+                                                <span className="detail-value">{foundedYear}</span>
+                                            </div>
+                                            <div className="detail-row">
+                                                <span className="detail-label">Country</span>
+                                                <span className="detail-value">🇧🇩 {club.country}</span>
+                                            </div>
+                                            {budget > 0 && (
+                                                <div className="detail-row">
+                                                    <span className="detail-label">Budget</span>
+                                                    <span className="detail-value highlight">€{(budget / 1000000).toFixed(1)}M</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <button className="club-card-btn">View Details</button>
                                     </div>
-                                    <div className="club-details">
-                                        <div className="detail-row">
-                                            <span className="detail-label">League</span>
-                                            <span className="detail-value">{club.league_name}</span>
-                                        </div>
-                                        <div className="detail-row">
-                                            <span className="detail-label">Founded</span>
-                                            <span className="detail-value">{club.founded_year}</span>
-                                        </div>
-                                        <div className="detail-row">
-                                            <span className="detail-label">Country</span>
-                                            <span className="detail-value">🇧🇩 {club.country}</span>
-                                        </div>
-                                        <div className="detail-row">
-                                            <span className="detail-label">Budget</span>
-                                            <span className="detail-value highlight">€{(club.budget / 1000000).toFixed(1)}M</span>
-                                        </div>
-                                    </div>
-                                    <button className="club-card-btn">View Details</button>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </div>
                 )}

@@ -58,13 +58,13 @@ export default function PlayerProfile() {
                 club: apiPlayer.current_club?.name || 'Free Agent',
                 league: apiPlayer.current_club?.league?.name || '',
                 age: calculateAge(apiPlayer.date_of_birth),
-                jersey: Math.floor(Math.random() * 99) + 1, // Random jersey for now
+                jersey: 'N/A', // Not stored in database
                 birthday: apiPlayer.date_of_birth ? new Date(apiPlayer.date_of_birth).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A',
-                birthplace: 'Bangladesh',
-                height: 'N/A', // Not available in Player table
-                weight: 'N/A', // Not available in Player table
-                strongFoot: 'Right', // Default
-                nationality: apiPlayer.nationality || 'Bangladesh',
+                birthplace: 'N/A', // Not stored in database
+                height: 'N/A', // Not available in Player table (use PlayerProfile for extended data)
+                weight: 'N/A', // Not available in Player table (use PlayerProfile for extended data)
+                strongFoot: 'N/A', // Not available in Player table (use PlayerProfile for extended data)
+                nationality: apiPlayer.nationality || 'N/A',
                 internationalCaps: 0, // Not available in Player table
                 internationalGoals: 0, // Not available in Player table
                 market_value: apiPlayer.fee ? apiPlayer.fee * 1000000 : 0,
@@ -260,14 +260,14 @@ export default function PlayerProfile() {
                                                 <div className="bpl-icon">🎯</div>
                                                 <div className="bpl-stat">
                                                     <div className="bpl-label">BPL Goals</div>
-                                                    <div className="bpl-value">{player.seasonStats.goals + Math.floor(Math.random() * 5)}</div>
+                                                    <div className="bpl-value">{player.seasonStats.goals}</div>
                                                 </div>
                                             </div>
                                             <div className="bpl-card">
                                                 <div className="bpl-icon">🎮</div>
                                                 <div className="bpl-stat">
                                                     <div className="bpl-label">BPL Matches</div>
-                                                    <div className="bpl-value">{player.seasonStats.appearances + Math.floor(Math.random() * 8)}</div>
+                                                    <div className="bpl-value">{player.seasonStats.appearances}</div>
                                                 </div>
                                             </div>
                                         </div>
