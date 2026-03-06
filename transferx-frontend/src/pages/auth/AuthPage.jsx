@@ -243,15 +243,6 @@ export default function AuthPage({ defaultTab = 'login' }) {
                   'Sign In →'
                 )}
               </button>
-
-              <div className="auth-demo">
-                <div className="auth-demo-title">🧪 Demo credentials</div>
-                <div className="auth-demo-credentials">
-                  user@transferx.com / user123
-                  <br />
-                  admin@transferx.com / admin123
-                </div>
-              </div>
             </form>
           ) : (
             <form onSubmit={handleSignup} className="auth-form">
@@ -325,15 +316,6 @@ export default function AuthPage({ defaultTab = 'login' }) {
                   'Create Account →'
                 )}
               </button>
-
-              <div className="auth-demo">
-                <div className="auth-demo-title">🧪 Demo credentials</div>
-                <div className="auth-demo-credentials">
-                  user@transferx.com / user123
-                  <br />
-                  admin@transferx.com / admin123
-                </div>
-              </div>
             </form>
           )}
         </div>
