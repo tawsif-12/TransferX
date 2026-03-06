@@ -33,20 +33,26 @@ export function ThemeProvider({ children }) {
             root.style.setProperty('--text-secondary', '#374151');
             root.style.setProperty('--text-muted', '#9ca3af');
             root.style.setProperty('--text-inverse', '#f9fafb');
+            root.style.setProperty('--text-inverse-rgb', '249,250,251');
         } else {
             // Dark theme (default)
-            root.style.setProperty('--bg-base', '#06100d');
-            root.style.setProperty('--bg-surface', '#0d1f14');
-            root.style.setProperty('--bg-card', '#111f16');
-            root.style.setProperty('--bg-elevated', '#162b1e');
+            root.style.setProperty('--bg-base', '#0f172a');  // deeper navy
+            root.style.setProperty('--bg-surface', '#1a1f36');
+            root.style.setProperty('--bg-card', '#111827');
+            root.style.setProperty('--bg-elevated', '#1f2937');
 
-            root.style.setProperty('--border', 'rgba(82, 183, 136, 0.15)');
-            root.style.setProperty('--border-strong', 'rgba(82, 183, 136, 0.35)');
+            root.style.setProperty('--border', 'rgba(82, 183, 136, 0.2)');
+            root.style.setProperty('--border-strong', 'rgba(82, 183, 136, 0.4)');
 
-            root.style.setProperty('--text-primary', '#d1fae5');
-            root.style.setProperty('--text-secondary', '#74c69d');
-            root.style.setProperty('--text-muted', '#4a6741');
-            root.style.setProperty('--text-inverse', '#06100d');
+            root.style.setProperty('--text-primary', '#e5e7eb');
+            root.style.setProperty('--text-secondary', '#a5b4fc');
+            root.style.setProperty('--text-muted', '#6b7280');
+            root.style.setProperty('--text-inverse', '#0f172a');
+            root.style.setProperty('--text-inverse-rgb', '15,23,42');
+            // card gradients / accent
+            root.style.setProperty('--card-gradient-start', '#1a1f36');
+            root.style.setProperty('--card-gradient-end', '#111827');
+            root.style.setProperty('--card-accent', '#4ade80');
         }
     };
 

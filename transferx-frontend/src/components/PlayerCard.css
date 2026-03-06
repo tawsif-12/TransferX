@@ -1,18 +1,38 @@
 .player-card {
-  background: #ffffff;
+  background: linear-gradient(135deg, var(--card-gradient-start), var(--card-gradient-end));
   border: 1px solid var(--border);
+  border-left: 4px solid var(--card-accent);
   border-radius: var(--radius-md);
-  padding: 24px;
+  padding: 24px 20px;
   text-align: center;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
   position: relative;
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+.player-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: var(--green-primary);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
 }
 
 .player-card:hover {
   border-color: var(--green-primary);
   transform: translateY(-4px);
-  box-shadow: 0 4px 16px rgba(34, 197, 94, 0.15);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
+}
+
+.player-card:hover::before {
+  transform: scaleX(1);
 }
 
 .player-card .status-badge {
