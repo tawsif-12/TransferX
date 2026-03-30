@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { successResponse, errorResponse, handleRouteError } from '@/lib/response';
 import { requireAuth } from '@/lib/middleware';
+import { getClubById } from '@/lib/dataQueries';
 
 /**
  * GET /api/clubs/:id
@@ -12,32 +13,17 @@ export async function GET(request, { params }) {
     const { id } = await params;
     const clubId = parseInt(id);
 
-    const club = await prisma.club.findUnique({
-      where: { club_id: clubId },
-      include: {
-        league: true,
-        players: {
-          include: {
-            agents: {
-              include: {
-                agent: true,
-              },
-            },
-          },
-        },
-        contracts: {
-          include: {
-            player: true,
-          },
-        },
-      },
-    });
-
-    if (!club) {
-      return errorResponse('Club not found', 404);
+    try {
+      const result = await getClubById(clubId);
+      if (result.success && result.data) {
+        return successResponse(result.data);
+      } else {
+        return errorResponse('Club not found', 404);
+      }
+    } catch (err) {
+      console.error('Query failed:', err.message);
+      return errorResponse('Failed to fetch club', 500);
     }
-
-    return successResponse(club);
   } catch (error) {
     return handleRouteError(error);
   }

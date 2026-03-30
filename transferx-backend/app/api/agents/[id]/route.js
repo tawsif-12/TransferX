@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { successResponse, errorResponse, handleRouteError } from '@/lib/response';
 import { requireAuth } from '@/lib/middleware';
+import { getAgentById } from '@/lib/dataQueries';
 
 /**
  * GET /api/agents/:id
@@ -12,30 +13,17 @@ export async function GET(request, { params }) {
         const { id } = await params;
         const agentId = parseInt(id);
 
-        const agent = await prisma.agent.findUnique({
-            where: { agent_id: agentId },
-            include: {
-                players: {
-                    include: {
-                        player: {
-                            include: {
-                                current_club: {
-                                    include: {
-                                        league: true,
-                                    },
-                                },
-                            },
-                        },
-                    },
-                },
-            },
-        });
-
-        if (!agent) {
-            return errorResponse('Agent not found', 404);
+        try {
+            const result = await getAgentById(agentId);
+            if (result.success && result.data) {
+                return successResponse(result.data);
+            } else {
+                return errorResponse('Agent not found', 404);
+            }
+        } catch (err) {
+            console.error('Query failed:', err.message);
+            return errorResponse('Failed to fetch agent', 500);
         }
-
-        return successResponse(agent);
     } catch (error) {
         return handleRouteError(error);
     }

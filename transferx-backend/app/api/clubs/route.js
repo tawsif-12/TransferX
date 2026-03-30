@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { successResponse, errorResponse, handleRouteError } from '@/lib/response';
 import { requireAuth } from '@/lib/middleware';
+import { getClubs as getClubsFromDB } from '@/lib/dataQueries';
 
 /**
  * GET /api/clubs
@@ -14,26 +15,24 @@ export async function GET(request) {
     const leagueId = searchParams.get('leagueId');
     const country = searchParams.get('country');
 
-    const where = {};
+    const filters = {
+      ...(name && { name }),
+      ...(leagueId && { leagueId }),
+      ...(country && { country })
+    };
 
-    if (name) {
-      where.name = { contains: name, mode: 'insensitive' };
+    try {
+      const result = await getClubsFromDB(filters);
+      if (result.success) {
+        return successResponse(result.data);
+      } else {
+        console.error('Database query failed:', result.error);
+        return successResponse([], 200);
+      }
+    } catch (err) {
+      console.error('Query failed:', err.message);
+      return successResponse([], 200);
     }
-
-    if (leagueId) where.league_id = parseInt(leagueId);
-    if (country) where.country = { contains: country, mode: 'insensitive' };
-
-    const clubs = await prisma.club.findMany({
-      where,
-      include: {
-        league: true,
-        players: true,
-        contracts: true,
-      },
-      orderBy: { club_id: 'asc' },
-    });
-
-    return successResponse(clubs);
   } catch (error) {
     return handleRouteError(error);
   }

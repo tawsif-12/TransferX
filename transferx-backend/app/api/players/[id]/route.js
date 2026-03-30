@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { successResponse, errorResponse, handleRouteError } from '@/lib/response';
 import { requireAuth } from '@/lib/middleware';
+import { getPlayerById } from '@/lib/dataQueries';
 
 /**
  * GET /api/players/:id
@@ -12,50 +13,17 @@ export async function GET(request, { params }) {
         const { id } = await params;
         const playerId = parseInt(id);
 
-        const player = await prisma.player.findUnique({
-            where: { player_id: playerId },
-            include: {
-                current_club: {
-                    include: {
-                        league: true,
-                    },
-                },
-                contracts: {
-                    include: {
-                        club: {
-                            include: {
-                                league: true,
-                            },
-                        },
-                    },
-                },
-                transfer_history: {
-                    include: {
-                        transfer: {
-                            include: {
-                                player: true,
-                                from_club: true,
-                                to_club: true,
-                            },
-                        },
-                    },
-                    orderBy: {
-                        transfer_id: 'desc', // Most recent first
-                    },
-                },
-                agents: {
-                    include: {
-                        agent: true,
-                    },
-                },
-            },
-        });
-
-        if (!player) {
-            return errorResponse('Player not found', 404);
+        try {
+            const result = await getPlayerById(playerId);
+            if (result.success && result.data) {
+                return successResponse(result.data);
+            } else {
+                return errorResponse('Player not found', 404);
+            }
+        } catch (err) {
+            console.error('Query failed:', err.message);
+            return errorResponse('Failed to fetch player', 500);
         }
-
-        return successResponse(player);
     } catch (error) {
         return handleRouteError(error);
     }

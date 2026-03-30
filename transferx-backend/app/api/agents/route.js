@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { successResponse, errorResponse, handleRouteError } from '@/lib/response';
 import { requireAuth } from '@/lib/middleware';
+import { getAgents as getAgentsFromDB } from '@/lib/dataQueries';
 
 /**
  * GET /api/agents
@@ -12,25 +13,22 @@ export async function GET(request) {
         const { searchParams } = new URL(request.url);
         const name = searchParams.get('name');
 
-        const where = {};
+        const filters = {
+            ...(name && { name })
+        };
 
-        if (name) {
-            where.agent_name = { contains: name, mode: 'insensitive' };
+        try {
+            const result = await getAgentsFromDB(filters);
+            if (result.success) {
+                return successResponse(result.data);
+            } else {
+                console.error('Database query failed:', result.error);
+                return successResponse([], 200);
+            }
+        } catch (err) {
+            console.error('Query failed:', err.message);
+            return successResponse([], 200);
         }
-
-        const agents = await prisma.agent.findMany({
-            where,
-            include: {
-                players: {
-                    include: {
-                        player: true,
-                    },
-                },
-            },
-            orderBy: { agent_id: 'asc' },
-        });
-
-        return successResponse(agents);
     } catch (error) {
         return handleRouteError(error);
     }

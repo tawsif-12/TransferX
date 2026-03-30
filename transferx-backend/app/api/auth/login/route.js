@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import prisma from '@/lib/prisma';
 import { generateToken } from '@/lib/auth';
 import { successResponse, errorResponse, handleRouteError } from '@/lib/response';
 import { validateData, loginSchema } from '@/lib/validation';
+import { findUserByEmail, getUserWithProfile } from '@/lib/authDB';
 
 // simple server-side sanitization helper
 const stripTags = (s = '') => s.replace(/<[^>]*>/g, '').replace(/&lt;|&gt;/g, '');
@@ -15,7 +15,7 @@ export async function OPTIONS(request) {
 export async function POST(request) {
   try {
     const body = await request.json();
-    
+
     // Validate input
     const validation = validateData(loginSchema, body);
     if (!validation.success) {
@@ -26,26 +26,26 @@ export async function POST(request) {
     email = stripTags(email).toLowerCase();
 
     // Find user
-    const user = await prisma.user.findUnique({
-      where: { email: email.toLowerCase() },
-      include: {
-        playerProfile: true,
-        agentProfile: true,
-      },
-    });
-
-    if (!user) {
+    const findResult = await findUserByEmail(email);
+    if (!findResult.success || !findResult.user) {
       return errorResponse('Invalid email or password', 401);
     }
 
+    const userBasic = findResult.user;
+
     // Verify password
-    const isValidPassword = await bcrypt.compare(password, user.password);
+    const isValidPassword = await bcrypt.compare(password, userBasic.password);
     if (!isValidPassword) {
       return errorResponse('Invalid email or password', 401);
     }
 
-    // Remove password from response
-    const { password: _, ...userWithoutPassword } = user;
+    // Get full user profile
+    const userResult = await getUserWithProfile(userBasic.id);
+    if (!userResult.success || !userResult.user) {
+      return errorResponse('User not found', 401);
+    }
+
+    const user = userResult.user;
 
     // Generate JWT token
     const token = generateToken(user.id, user.role, user.email);
@@ -56,10 +56,14 @@ export async function POST(request) {
       user: {
         name: user.fullName || user.email,
         email: user.email,
-        ...userWithoutPassword
+        id: user.id,
+        role: user.role,
+        playerProfile: user.playerProfile || null,
+        agentProfile: user.agentProfile || null,
       },
     });
   } catch (error) {
+    console.error('Login error:', error);
     return handleRouteError(error);
   }
 }

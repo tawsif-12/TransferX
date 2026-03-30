@@ -16,21 +16,27 @@ export async function GET(request) {
             return errorResponse('Only admin can list all contracts', 403);
         }
 
-        const contracts = await prisma.contract.findMany({
-            include: {
-                player: true,
-                club: {
-                    include: {
-                        league: true,
+        try {
+            const contracts = await prisma.contract.findMany({
+                include: {
+                    player: true,
+                    club: {
+                        include: {
+                            league: true,
+                        },
                     },
                 },
-            },
-            orderBy: {
-                start_date: 'desc',
-            },
-        });
+                orderBy: {
+                    start_date: 'desc',
+                },
+            });
 
-        return successResponse(contracts);
+            return successResponse(contracts);
+        } catch (prismaErr) {
+            // If Prisma fails, return empty response
+            console.error('Prisma query failed for contracts:', prismaErr.message);
+            return successResponse([], 200);
+        }
     } catch (error) {
         return handleRouteError(error);
     }

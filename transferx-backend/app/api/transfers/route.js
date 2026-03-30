@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { successResponse, errorResponse, handleRouteError } from '@/lib/response';
 import { requireAuth } from '@/lib/middleware';
+import { getTransfers } from '@/lib/dataQueries';
 
 /**
  * GET /api/transfers
@@ -15,42 +16,23 @@ export async function GET(request) {
         const fromYear = searchParams.get('fromYear');
         const toYear = searchParams.get('toYear');
 
-        const where = {};
+        const filters = {};
+        if (playerId) filters.playerId = playerId;
+        if (type) filters.type = type;
+        if (fromYear) filters.fromYear = fromYear;
+        if (toYear) filters.toYear = toYear;
 
-        if (playerId) where.player_id = parseInt(playerId);
-        if (type) where.transfer_type = type;
-
-        if (fromYear || toYear) {
-            where.transfer_date = {};
-            if (fromYear) {
-                where.transfer_date.gte = new Date(`${fromYear}-01-01`);
+        try {
+            const result = await getTransfers(filters);
+            if (result.success) {
+                return successResponse(result.data);
+            } else {
+                return successResponse([], 200);
             }
-            if (toYear) {
-                where.transfer_date.lte = new Date(`${toYear}-12-31`);
-            }
+        } catch (err) {
+            console.error('Query failed:', err.message);
+            return successResponse([], 200);
         }
-
-        const transfers = await prisma.transfer.findMany({
-            where,
-            include: {
-                player: true,
-                from_club: {
-                    include: {
-                        league: true,
-                    },
-                },
-                to_club: {
-                    include: {
-                        league: true,
-                    },
-                },
-            },
-            orderBy: {
-                transfer_date: 'desc',
-            },
-        });
-
-        return successResponse(transfers);
     } catch (error) {
         return handleRouteError(error);
     }

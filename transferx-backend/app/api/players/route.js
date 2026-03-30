@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { successResponse, errorResponse, handleRouteError } from '@/lib/response';
 import { requireAuth } from '@/lib/middleware';
+import { getPlayers as getPlayersFromDB } from '@/lib/dataQueries';
 
 /**
  * GET /api/players
@@ -15,32 +16,25 @@ export async function GET(request) {
     const nationality = searchParams.get('nationality');
     const clubId = searchParams.get('clubId');
 
-    const where = {};
+    const filter = {
+      ...(name && { name }),
+      ...(position && { position }),
+      ...(nationality && { nationality }),
+      ...(clubId && { clubId })
+    };
 
-    if (name) {
-      where.OR = [
-        { first_name: { contains: name, mode: 'insensitive' } },
-        { last_name: { contains: name, mode: 'insensitive' } },
-      ];
+    try {
+      const result = await getPlayersFromDB(500, filter);
+      if (result.success) {
+        return successResponse(result.data);
+      } else {
+        console.error('Database query failed:', result.error);
+        return successResponse([], 200);
+      }
+    } catch (err) {
+      console.error('Query failed:', err.message);
+      return successResponse([], 200);
     }
-
-    if (position) where.position = { contains: position, mode: 'insensitive' };
-    if (nationality) where.nationality = { contains: nationality, mode: 'insensitive' };
-    if (clubId) where.current_club_id = parseInt(clubId);
-
-    const players = await prisma.player.findMany({
-      where,
-      include: {
-        current_club: {
-          include: {
-            league: true,
-          },
-        },
-      },
-      orderBy: { player_id: 'desc' },
-    });
-
-    return successResponse(players);
   } catch (error) {
     return handleRouteError(error);
   }

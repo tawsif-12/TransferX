@@ -29,6 +29,7 @@ export default function AuthPage({ defaultTab = 'login' }) {
   const [signupEmail, setSignupEmail] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
   const [signupConfirm, setSignupConfirm] = useState('');
+  const [signupRole, setSignupRole] = useState('PLAYER');
   const [signupErrors, setSignupErrors] = useState({});
 
   useEffect(() => {
@@ -72,8 +73,28 @@ export default function AuthPage({ defaultTab = 'login' }) {
         else navigate('/');
       }, 1500);
     } catch (err) {
-      const errorMessage = err.response?.data?.error || err.message || 'Login failed';
+      console.error('Login error:', err);
+      let errorMessage = 'Login failed';
+
+      if (err.response?.data?.error) {
+        errorMessage = err.response.data.error;
+        if (Array.isArray(err.response.data.error)) {
+          errorMessage = err.response.data.error.join(', ');
+        }
+      } else if (err.response?.status === 401) {
+        errorMessage = 'Invalid email or password';
+      } else if (err.message) {
+        errorMessage = err.message;
+      } else if (err.response?.statusText) {
+        errorMessage = `${err.response.status}: ${err.response.statusText}`;
+      }
+
       toast.error(errorMessage);
+      console.error('Full error:', {
+        status: err.response?.status,
+        data: err.response?.data,
+        message: err.message
+      });
     } finally {
       setLoading(false);
     }
@@ -102,7 +123,8 @@ export default function AuthPage({ defaultTab = 'login' }) {
       const res = await axiosClient.post('/auth/signup', {
         fullName: sanitizedName,
         email: sanitizedEmail,
-        password: signupPassword // Don't sanitize password, keep original
+        password: signupPassword, // Don't sanitize password, keep original
+        role: signupRole
       });
 
       const { token, role, user } = res.data.data;
@@ -115,8 +137,29 @@ export default function AuthPage({ defaultTab = 'login' }) {
         navigate('/');
       }, 1500);
     } catch (err) {
-      const errorMessage = err.response?.data?.error || err.message || 'Registration failed';
+      console.error('Signup error:', err);
+      let errorMessage = 'Registration failed';
+
+      if (err.response?.data?.error) {
+        errorMessage = err.response.data.error;
+        // Handle validation errors array
+        if (Array.isArray(err.response.data.error)) {
+          errorMessage = err.response.data.error.join(', ');
+        }
+      } else if (err.response?.status === 409) {
+        errorMessage = 'Email already registered';
+      } else if (err.message) {
+        errorMessage = err.message;
+      } else if (err.response?.statusText) {
+        errorMessage = `${err.response.status}: ${err.response.statusText}`;
+      }
+
       toast.error(errorMessage);
+      console.error('Full error:', {
+        status: err.response?.status,
+        data: err.response?.data,
+        message: err.message
+      });
     } finally {
       setLoading(false);
     }
@@ -261,6 +304,25 @@ export default function AuthPage({ defaultTab = 'login' }) {
                 icon="👤"
                 required
               />
+
+              <div className="form-group">
+                <label htmlFor="signupRole" className="form-label">Account Type</label>
+                <select
+                  id="signupRole"
+                  name="role"
+                  value={signupRole}
+                  onChange={(e) => {
+                    setSignupRole(e.target.value);
+                    setSignupErrors({});
+                  }}
+                  className="form-input"
+                  required
+                >
+                  <option value="PLAYER">Player</option>
+                  <option value="AGENT">Agent</option>
+                  <option value="CLUB_MANAGER">Club Manager</option>
+                </select>
+              </div>
 
               <FormInput
                 label="Email Address"

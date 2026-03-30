@@ -1,15 +1,14 @@
 import { NextResponse } from 'next/server';
-import prisma from '../../lib/prisma';
+import { checkDatabaseHealth } from '../../lib/dbHealth';
 
 export async function GET() {
-  // verify database connection
+  // verify database connection using direct sqlcmd (bypasses Prisma/tedious driver issues)
   let dbStatus = 'unavailable';
   try {
-    // simple raw query to ensure Prisma can reach the database
-    await prisma.$queryRaw`SELECT 1`;
-    dbStatus = 'connected';
+    const result = await checkDatabaseHealth();
+    dbStatus = result.status;
   } catch (err) {
-    console.error('Database connectivity check failed:', err);
+    console.error('Database health check error:', err.message);
   }
 
   return NextResponse.json({
