@@ -7,7 +7,7 @@ import { execSync } from 'child_process';
 export async function checkDatabaseHealth() {
     try {
         const result = execSync(
-            'sqlcmd -S localhost\\SQLEXPRESS -E -C -d transferx -Q "SELECT 1"',
+            'sqlcmd -S DESKTOP-3HO2U54\\SQLEXPRESS -E -C -d transferx -Q "SELECT 1"',
             { encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] }
         );
 

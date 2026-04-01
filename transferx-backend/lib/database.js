@@ -24,7 +24,7 @@ COMMIT;`;
         writeFileSync(tempFile, finalQuery, 'utf-8');
 
         const result = execSync(
-            `sqlcmd -S DESKTOP-TDMF88Q\\SQLEXPRESS -E -C -d transferx -s "," -W -i "${tempFile}"`,
+            `sqlcmd -S DESKTOP-3HO2U54\\SQLEXPRESS -E -C -d transferx -s "," -W -i "${tempFile}"`,
             {
                 encoding: 'utf-8',
                 stdio: ['pipe', 'pipe', 'pipe'],

@@ -1,7 +1,7 @@
 const sql = require('mssql');
 
 const config = {
-    server: 'DESKTOP-TDMF88Q\\SQLEXPRESS',
+    server: 'DESKTOP-3HO2U54\\SQLEXPRESS',
     authentication: {
         type: 'default',
         options: {

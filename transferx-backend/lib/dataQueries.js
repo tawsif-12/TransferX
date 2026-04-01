@@ -3,7 +3,7 @@ import { writeFileSync, unlinkSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
 
-const SERVER = 'DESKTOP-TDMF88Q\\SQLEXPRESS';
+const SERVER = 'DESKTOP-3HO2U54\\SQLEXPRESS';
 const DATABASE = 'transferx';
 
 /**
@@ -120,7 +120,7 @@ SELECT TOP ${limit}
     position,
     nationality,
     CONVERT(VARCHAR(10), date_of_birth, 121) as date_of_birth,
-    CAST(ISNULL(fee, 0) as VARCHAR(20)) as fee
+    CAST(ISNULL(fee, 0) as VARCHAR(32)) as fee
 FROM Player
 WHERE ${whereClause}
 ORDER BY player_id
@@ -130,18 +130,50 @@ ORDER BY player_id
         const columns = ['player_id', 'current_club_id', 'first_name', 'last_name', 'position', 'nationality', 'date_of_birth', 'fee'];
         const rows = parseSqlOutput(output, columns);
 
+        // Fetch club names separately for each player
+        const playersData = rows.map(row => ({
+            player_id: parseInt(row.player_id),
+            current_club_id: parseInt(row.current_club_id) || null,
+            first_name: row.first_name,
+            last_name: row.last_name,
+            position: row.position,
+            nationality: row.nationality,
+            date_of_birth: row.date_of_birth ? new Date(row.date_of_birth) : null,
+            fee: row.fee ? parseFloat(row.fee) : null,
+        }));
+
+        // Get club names for players that have clubs
+        if (playersData.some(p => p.current_club_id > 0)) {
+            try {
+                const clubIds = [...new Set(playersData.filter(p => p.current_club_id > 0).map(p => p.current_club_id))];
+                const clubQuery = `
+SET NOCOUNT ON;
+SELECT CAST(club_id as VARCHAR(10)) as club_id, name
+FROM Club
+WHERE club_id IN (${clubIds.join(',')})
+`;
+                const clubOutput = executeSqlQuery(clubQuery);
+                const clubRows = parseSqlOutput(clubOutput, ['club_id', 'name']);
+                const clubMap = Object.fromEntries(clubRows.map(r => [parseInt(r.club_id), r.name]));
+
+                // Attach club info to players
+                playersData.forEach(player => {
+                    if (player.current_club_id && clubMap[player.current_club_id]) {
+                        player.current_club = {
+                            club_id: player.current_club_id,
+                            name: clubMap[player.current_club_id]
+                        };
+                    }
+                });
+            } catch (clubError) {
+                console.log('Could not fetch club names:', clubError.message);
+                // Continue without club names
+            }
+        }
+
         return {
             success: true,
-            data: rows.map(row => ({
-                player_id: parseInt(row.player_id),
-                current_club_id: parseInt(row.current_club_id) || null,
-                first_name: row.first_name,
-                last_name: row.last_name,
-                position: row.position,
-                nationality: row.nationality,
-                date_of_birth: row.date_of_birth ? new Date(row.date_of_birth) : null,
-                fee: row.fee ? parseFloat(row.fee) : null,
-            }))
+            data: playersData
         };
     } catch (error) {
         console.error('Error getting players:', error.message);

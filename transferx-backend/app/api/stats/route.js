@@ -25,7 +25,7 @@ export async function GET(request) {
       const recentTransfers = transfersResult.success ? transfersResult.data.slice(0, 5) : [];
 
       const response = {
-        stats: {
+        overview: {
           totalPlayers: stats.total_players,
           totalClubs: stats.total_clubs,
           totalLeagues: stats.total_leagues,
@@ -34,6 +34,7 @@ export async function GET(request) {
           totalTransferValue: stats.total_transfer_value,
           transfersThisSeason: stats.total_transfers,
           transfersThisMonth: 0,
+          totalPlayerMarketValue: 0,
         },
         recentTransfers: recentTransfers.map(t => ({
           transfer_id: t.transfer_id,
@@ -57,13 +58,16 @@ export async function GET(request) {
     } catch (err) {
       console.error('Stats query failed:', err.message);
       return successResponse({
-        stats: {
+        overview: {
           totalPlayers: 0,
           totalClubs: 0,
           totalLeagues: 0,
           totalAgents: 0,
           totalTransfers: 0,
           totalTransferValue: 0,
+          transfersThisSeason: 0,
+          transfersThisMonth: 0,
+          totalPlayerMarketValue: 0,
         },
         recentTransfers: [],
         mostExpensiveTransfers: [],

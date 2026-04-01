@@ -8,7 +8,7 @@ import { writeFileSync, unlinkSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
 
-const SERVER = 'DESKTOP-TDMF88Q\\SQLEXPRESS';
+const SERVER = 'DESKTOP-3HO2U54\\SQLEXPRESS';
 const DATABASE = 'transferx';
 
 /**
