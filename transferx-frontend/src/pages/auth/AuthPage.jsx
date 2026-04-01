@@ -5,7 +5,6 @@ import { useToast } from '../../context/ToastContext';
 import axiosClient from '../../api/axiosClient';
 import FormInput from '../../components/FormInput';
 import PasswordInput from '../../components/PasswordInput';
-import PasswordStrengthBar from '../../components/PasswordStrengthBar';
 import { validateLoginForm, validateSignupForm } from '../../utils/validators';
 import { sanitizeEmail, sanitizeName, sanitizePassword, sanitizeInput } from '../../utils/sanitize';
 import './AuthPage.css';
@@ -246,21 +245,6 @@ export default function AuthPage({ defaultTab = 'login' }) {
           <p className="auth-description">
             Track every player movement, contract and transfer across the world's top leagues.
           </p>
-
-          <div className="auth-stats">
-            <div className="auth-stat">
-              <div className="auth-stat-num">4,200+</div>
-              <div className="auth-stat-label">Players</div>
-            </div>
-            <div className="auth-stat">
-              <div className="auth-stat-num">380+</div>
-              <div className="auth-stat-label">Clubs</div>
-            </div>
-            <div className="auth-stat">
-              <div className="auth-stat-num">€12B+</div>
-              <div className="auth-stat-label">Transfer Value</div>
-            </div>
-          </div>
         </div>
 
         <div className="auth-decorations">
@@ -366,22 +350,19 @@ export default function AuthPage({ defaultTab = 'login' }) {
                 required
               />
 
-              <div>
-                <PasswordInput
-                  label="Password"
-                  name="password"
-                  value={signupPassword}
-                  onChange={(e) => {
-                    setSignupPassword(e.target.value);
-                    setSignupErrors({});
-                  }}
-                  error={signupErrors.password}
-                  placeholder="Min. 6 characters"
-                  required
-                  minLength={6}
-                />
-                <PasswordStrengthBar password={signupPassword} />
-              </div>
+              <PasswordInput
+                label="Password"
+                name="password"
+                value={signupPassword}
+                onChange={(e) => {
+                  setSignupPassword(e.target.value);
+                  setSignupErrors({});
+                }}
+                error={signupErrors.password}
+                placeholder="Min. 6 characters"
+                required
+                minLength={6}
+              />
 
               <PasswordInput
                 label="Confirm Password"

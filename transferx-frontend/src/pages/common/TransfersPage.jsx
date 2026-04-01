@@ -1,18 +1,21 @@
 import { useState, useEffect } from 'react';
 import Navbar from '../../components/Navbar';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import NewsCard from '../../components/NewsCard';
 import { useToast } from '../../context/ToastContext';
 import axiosClient from '../../api/axiosClient';
 import './TransfersPage.css';
 
 export default function TransfersPage() {
     const [transfers, setTransfers] = useState([]);
+    const [news, setNews] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const toast = useToast();
 
     useEffect(() => {
         loadTransfers();
+        loadNews();
     }, []);
 
     const loadTransfers = async () => {
@@ -27,6 +30,16 @@ export default function TransfersPage() {
             toast.error(msg);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const loadNews = async () => {
+        try {
+            const response = await axiosClient.get('/news?limit=6');
+            setNews(response.data.data || []);
+        } catch (err) {
+            console.error('News error:', err);
+            // Don't show error for news, just log it
         }
     };
 
@@ -45,6 +58,20 @@ export default function TransfersPage() {
                     <h1 className="page-title">Transfers</h1>
                     <p className="page-subtitle">Latest player transfers in Bangladesh football</p>
                 </div>
+
+                {/* News Section */}
+                {news.length > 0 && (
+                    <div className="news-section">
+                        <div className="news-tabs">
+                            <h2 className="news-title">Latest News</h2>
+                        </div>
+                        <div className="news-grid">
+                            {news.map((newsItem) => (
+                                <NewsCard key={newsItem.news_id} news={newsItem} />
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 {error ? (
                     <div style={{ padding: '40px', textAlign: 'center' }}>

@@ -99,8 +99,19 @@ export async function getPlayers(limit = 500, filters = {}) {
             whereClause += ` AND CONCAT(first_name, ' ', last_name) LIKE '%${escapedName}%'`;
         }
         if (filters.position) {
-            const escapedPosition = filters.position.replace(/'/g, "''");
-            whereClause += ` AND position = '${escapedPosition}'`;
+            // Map category positions to actual database positions
+            const positionMap = {
+                'GOALKEEPER': ['Goalkeeper'],
+                'DEFENDER': ['Centre-Back', 'Left-Back', 'Right-Back'],
+                'MIDFIELDER': ['Central Midfield', 'Defensive Midfield', 'Left Midfield', 'Attacking Midfield'],
+                'FORWARD': ['Centre-Forward', 'Left Winger', 'Right Winger', 'Second Striker']
+            };
+            
+            const positions = positionMap[filters.position] || [];
+            if (positions.length > 0) {
+                const positionList = positions.map(p => `'${p.replace(/'/g, "''")}'`).join(',');
+                whereClause += ` AND position IN (${positionList})`;
+            }
         }
         if (filters.nationality) {
             const escapedNationality = filters.nationality.replace(/'/g, "''");
@@ -262,16 +273,20 @@ SET NOCOUNT ON;
 SELECT
     CAST(a.agent_id as VARCHAR(10)) as agent_id,
     a.agent_name,
+    CAST(ISNULL(a.age, 0) as VARCHAR(10)) as age,
+    CAST(ISNULL(a.experience_years, 0) as VARCHAR(10)) as experience_years,
+    CAST(ISNULL(a.market_value_managed, 0) as VARCHAR(20)) as market_value_managed,
+    CAST(ISNULL(a.contact_info, '') as VARCHAR(255)) as contact_info,
     CAST(COUNT(DISTINCT pa.player_id) as VARCHAR(10)) as player_count
 FROM Agent a
 LEFT JOIN PlayerAgent pa ON a.agent_id = pa.agent_id
 WHERE ${whereClause}
-GROUP BY a.agent_id, a.agent_name
+GROUP BY a.agent_id, a.agent_name, a.age, a.experience_years, a.market_value_managed, a.contact_info
 ORDER BY a.agent_id
 `;
 
         const output = executeSqlQuery(query);
-        const columns = ['agent_id', 'agent_name', 'player_count'];
+        const columns = ['agent_id', 'agent_name', 'age', 'experience_years', 'market_value_managed', 'contact_info', 'player_count'];
         const rows = parseSqlOutput(output, columns);
 
         return {
@@ -279,6 +294,10 @@ ORDER BY a.agent_id
             data: rows.map(row => ({
                 agent_id: parseInt(row.agent_id),
                 agent_name: row.agent_name,
+                age: parseInt(row.age || 0),
+                experience_years: parseInt(row.experience_years || 0),
+                market_value_managed: parseFloat(row.market_value_managed || 0),
+                contact_info: row.contact_info,
                 player_count: parseInt(row.player_count || 0),
                 players: [],
             }))
@@ -629,5 +648,59 @@ SELECT 'TOTAL_TRANSFER_VALUE', CAST(CAST(ISNULL(SUM(transfer_fee), 0) as BIGINT)
     } catch (error) {
         console.error('Error getting dashboard stats:', error.message);
         return { success: false, error: error.message, data: {} };
+    }
+}
+
+/**
+ * Get news about Bangladesh players
+ */
+export async function getNews(limit = 10, filters = {}) {
+    try {
+        let whereClause = '1=1';
+
+        if (filters.playerId) {
+            whereClause += ` AND player_id = ${parseInt(filters.playerId)}`;
+        }
+        if (filters.category) {
+            const escapedCategory = filters.category.replace(/'/g, "''");
+            whereClause += ` AND category = '${escapedCategory}'`;
+        }
+
+        const query = `
+SET NOCOUNT ON;
+SELECT TOP ${limit}
+    CAST(news_id as VARCHAR(10)) as news_id,
+    title,
+    description,
+    category,
+    image_url,
+    CAST(ISNULL(player_id, 0) as VARCHAR(10)) as player_id,
+    CONVERT(VARCHAR(19), created_at, 121) as created_at
+FROM News
+WHERE ${whereClause}
+ORDER BY created_at DESC
+`;
+
+        const output = executeSqlQuery(query);
+        const columns = ['news_id', 'title', 'description', 'category', 'image_url', 'player_id', 'created_at'];
+        const rows = parseSqlOutput(output, columns);
+
+        const newsData = rows.map(row => ({
+            news_id: parseInt(row.news_id),
+            title: row.title,
+            description: row.description,
+            category: row.category,
+            image_url: row.image_url,
+            player_id: parseInt(row.player_id) || null,
+            created_at: row.created_at ? new Date(row.created_at) : null,
+        }));
+
+        return {
+            success: true,
+            data: newsData
+        };
+    } catch (error) {
+        console.error('Error getting news:', error.message);
+        return { success: false, error: error.message, data: [] };
     }
 }
