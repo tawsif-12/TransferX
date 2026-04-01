@@ -46,9 +46,10 @@ export default function AuthPage({ defaultTab = 'login' }) {
   const handleLogin = async (e) => {
     e.preventDefault();
 
-    const errors = validateLoginForm({ email: loginEmail, password: loginPassword });
-    if (Object.keys(errors).length > 0) {
-      setLoginErrors(errors);
+    const validation = validateLoginForm({ email: loginEmail, password: loginPassword });
+    if (!validation.valid) {
+      console.log('Validation failed:', validation.errors);
+      setLoginErrors(validation.errors);
       return;
     }
 
@@ -57,23 +58,44 @@ export default function AuthPage({ defaultTab = 'login' }) {
       // Sanitize input before sending to API
       const sanitizedEmail = sanitizeEmail(loginEmail);
 
+      console.log('Sending login request with:', { email: sanitizedEmail });
+
       const res = await axiosClient.post('/auth/login', {
         email: sanitizedEmail,
         password: loginPassword // Don't sanitize password, keep original
       });
 
-      const { token, role, user } = res.data.data;
-      const successMsg = `Welcome back, ${user.name.split(' ')[0]}!`;
+      console.log('Login response received:', res);
+
+      const responseData = res.data?.data;
+      if (!responseData) {
+        throw new Error('Invalid response structure from server');
+      }
+
+      const { token, role, user } = responseData;
+      
+      if (!token || !user) {
+        throw new Error('Missing token or user data in response');
+      }
+
+      const userName = user.name || user.email || 'User';
+      const successMsg = `Welcome back, ${userName.split(' ')[0]}!`;
+      
+      console.log('Setting success state and logging in user:', user);
+      
       setSuccess(successMsg);
       toast.success(successMsg);
       auth.login(token, role, user);
 
+      console.log('Auth login complete, redirecting in 1.5 seconds...');
+
       setTimeout(() => {
+        console.log('Navigating to:', role === 'ADMIN' ? '/admin/dashboard' : '/');
         if (role === 'ADMIN') navigate('/admin/dashboard');
         else navigate('/');
       }, 1500);
     } catch (err) {
-      console.error('Login error:', err);
+      console.error('Login error details:', err);
       let errorMessage = 'Login failed';
 
       if (err.response?.data?.error) {
@@ -89,11 +111,13 @@ export default function AuthPage({ defaultTab = 'login' }) {
         errorMessage = `${err.response.status}: ${err.response.statusText}`;
       }
 
+      console.error('Displaying error:', errorMessage);
       toast.error(errorMessage);
       console.error('Full error:', {
         status: err.response?.status,
         data: err.response?.data,
-        message: err.message
+        message: err.message,
+        config: err.config
       });
     } finally {
       setLoading(false);
@@ -103,14 +127,16 @@ export default function AuthPage({ defaultTab = 'login' }) {
   const handleSignup = async (e) => {
     e.preventDefault();
 
-    const errors = validateSignupForm({
+    const validation = validateSignupForm({
       fullName: signupName,
       email: signupEmail,
       password: signupPassword,
-      confirm: signupConfirm
+      confirmPassword: signupConfirm
     });
-    if (Object.keys(errors).length > 0) {
-      setSignupErrors(errors);
+    
+    if (!validation.valid) {
+      console.log('Validation failed:', validation.errors);
+      setSignupErrors(validation.errors);
       return;
     }
 
@@ -120,6 +146,8 @@ export default function AuthPage({ defaultTab = 'login' }) {
       const sanitizedName = sanitizeName(signupName);
       const sanitizedEmail = sanitizeEmail(signupEmail);
 
+      console.log('Sending signup request with:', { sanitizedName, sanitizedEmail, role: signupRole });
+
       const res = await axiosClient.post('/auth/signup', {
         fullName: sanitizedName,
         email: sanitizedEmail,
@@ -127,17 +155,36 @@ export default function AuthPage({ defaultTab = 'login' }) {
         role: signupRole
       });
 
-      const { token, role, user } = res.data.data;
-      const successMsg = `Welcome to TransferX, ${user.name.split(' ')[0]}!`;
+      console.log('Signup response received:', res);
+      
+      const responseData = res.data?.data;
+      if (!responseData) {
+        throw new Error('Invalid response structure from server');
+      }
+      
+      const { token, role, user } = responseData;
+      
+      if (!token || !user) {
+        throw new Error('Missing token or user data in response');
+      }
+
+      const userName = user.name || user.email || 'User';
+      const successMsg = `Welcome to TransferX, ${userName.split(' ')[0]}!`;
+      
+      console.log('Setting success state and logging in user:', user);
+      
       setSuccess(successMsg);
       toast.success(successMsg);
       auth.login(token, role, user);
 
+      console.log('Auth login complete, redirecting in 1.5 seconds...');
+      
       setTimeout(() => {
+        console.log('Navigating to home page');
         navigate('/');
       }, 1500);
     } catch (err) {
-      console.error('Signup error:', err);
+      console.error('Signup error details:', err);
       let errorMessage = 'Registration failed';
 
       if (err.response?.data?.error) {
@@ -154,11 +201,13 @@ export default function AuthPage({ defaultTab = 'login' }) {
         errorMessage = `${err.response.status}: ${err.response.statusText}`;
       }
 
+      console.error('Displaying error:', errorMessage);
       toast.error(errorMessage);
       console.error('Full error:', {
         status: err.response?.status,
         data: err.response?.data,
-        message: err.message
+        message: err.message,
+        config: err.config
       });
     } finally {
       setLoading(false);
@@ -256,7 +305,6 @@ export default function AuthPage({ defaultTab = 'login' }) {
                 }}
                 error={loginErrors.email}
                 placeholder="you@transferx.com"
-                icon="✉"
                 required
               />
 
@@ -301,28 +349,8 @@ export default function AuthPage({ defaultTab = 'login' }) {
                 }}
                 error={signupErrors.fullName}
                 placeholder="Your full name"
-                icon="👤"
                 required
               />
-
-              <div className="form-group">
-                <label htmlFor="signupRole" className="form-label">Account Type</label>
-                <select
-                  id="signupRole"
-                  name="role"
-                  value={signupRole}
-                  onChange={(e) => {
-                    setSignupRole(e.target.value);
-                    setSignupErrors({});
-                  }}
-                  className="form-input"
-                  required
-                >
-                  <option value="PLAYER">Player</option>
-                  <option value="AGENT">Agent</option>
-                  <option value="CLUB_MANAGER">Club Manager</option>
-                </select>
-              </div>
 
               <FormInput
                 label="Email Address"
@@ -335,7 +363,6 @@ export default function AuthPage({ defaultTab = 'login' }) {
                 }}
                 error={signupErrors.email}
                 placeholder="you@transferx.com"
-                icon="✉"
                 required
               />
 

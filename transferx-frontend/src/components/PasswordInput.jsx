@@ -35,7 +35,6 @@ export default function PasswordInput({
         </label>
       )}
       <div className="form-input-wrapper">
-        <span className="form-input-icon" aria-hidden="true">🔒</span>
         <input
           type={showPassword ? 'text' : 'password'}
           id={name}
@@ -53,7 +52,7 @@ export default function PasswordInput({
           aria-invalid={error ? 'true' : 'false'}
           aria-required={required}
           aria-describedby={describedByIds}
-          className={`form-input form-input--with-icon form-input--with-toggle ${error ? 'form-input--error' : ''}`}
+          className={`form-input form-input--with-toggle ${error ? 'form-input--error' : ''}`}
         />
         <button
           type="button"

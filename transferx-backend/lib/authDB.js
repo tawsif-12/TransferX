@@ -96,19 +96,36 @@ export async function createUser(email, hashedPassword, fullName, role = 'PLAYER
         const escapedName = fullName.replace(/'/g, "''");
 
         const query = `
-INSERT INTO [User] (email, password, fullName, role)
-VALUES ('${escapedEmail}', '${hashedPassword}', '${escapedName}', '${role}');
+INSERT INTO [User] (email, password, fullName, role, created_at, updated_at)
+VALUES ('${escapedEmail}', '${hashedPassword}', '${escapedName}', '${role}', GETUTCDATE(), GETUTCDATE());
 SELECT SCOPE_IDENTITY() as userId;
 `;
 
         const output = executeSqlQuery(query);
+        
+        // Parse the SCOPE_IDENTITY result
         const lines = output.trim().split('\n');
-        const lastLine = lines[lines.length - 1].trim();
-        const userId = parseInt(lastLine);
+        let userId = null;
+        
+        // Find the line with just the number (userId value)
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i].trim();
+            // Skip empty lines, lines with column headers, dashes, and status messages
+            if (line && !line.includes('---') && !line.includes('rows affected') && !line.includes('userId') && !line.includes('-')) {
+                const parsed = parseInt(line);
+                if (!isNaN(parsed) && parsed > 0) {
+                    userId = parsed;
+                    break;
+                }
+            }
+        }
 
         if (!userId) {
+            console.error('Failed to parse userId from output:', output);
             return { success: false, error: 'Failed to create user' };
         }
+
+        console.log('User created with ID:', userId);
 
         // Create profile based on role
         if (role === 'PLAYER') {
