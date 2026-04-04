@@ -4,6 +4,26 @@ import { tmpdir } from 'os';
 import { join } from 'path';
 
 /**
+ * Parse DATABASE_URL to extract server name
+ */
+function extractServerNameFromDatabaseUrl() {
+    const dbUrl = process.env.DATABASE_URL;
+    if (!dbUrl) {
+        // Default to local server
+        return 'DESKTOP-TDMF88Q\\SQLEXPRESS';
+    }
+
+    // Parse sqlserver://SERVER\INSTANCE;database=...
+    const match = dbUrl.match(/sqlserver:\/\/([^;]+)/);
+    if (match && match[1]) {
+        return match[1];
+    }
+
+    // Fallback to local server
+    return 'DESKTOP-TDMF88Q\\SQLEXPRESS';
+}
+
+/**
  * Execute SQL queries using sqlcmd (bypasses Prisma/tedious driver issues)
  * This is a workaround for Prisma connection issues with named SQL Server instances
  */
@@ -23,8 +43,9 @@ COMMIT;`;
         tempFile = join(tmpdir(), `sqlquery_${Date.now()}.sql`);
         writeFileSync(tempFile, finalQuery, 'utf-8');
 
+        const serverName = extractServerNameFromDatabaseUrl();
         const result = execSync(
-            `sqlcmd -S DESKTOP-3HO2U54\\SQLEXPRESS -E -C -d transferx -s "," -W -i "${tempFile}"`,
+            `sqlcmd -S ${serverName} -E -C -d transferx -s "," -W -i "${tempFile}"`,
             {
                 encoding: 'utf-8',
                 stdio: ['pipe', 'pipe', 'pipe'],

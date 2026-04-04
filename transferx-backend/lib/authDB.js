@@ -2,9 +2,7 @@ import { execSync } from 'child_process';
 import { writeFileSync, unlinkSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
-
-const SERVER = 'DESKTOP-3HO2U54\\SQLEXPRESS';
-const DATABASE = 'transferx';
+import { SERVER, DATABASE } from './dbConfig.js';
 
 /**
  * Execute SQL query using sqlcmd
@@ -102,11 +100,11 @@ SELECT SCOPE_IDENTITY() as userId;
 `;
 
         const output = executeSqlQuery(query);
-        
+
         // Parse the SCOPE_IDENTITY result
         const lines = output.trim().split('\n');
         let userId = null;
-        
+
         // Find the line with just the number (userId value)
         for (let i = 0; i < lines.length; i++) {
             const line = lines[i].trim();
