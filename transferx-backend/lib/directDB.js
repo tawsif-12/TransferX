@@ -7,9 +7,7 @@ import { execSync, spawn } from 'child_process';
 import { writeFileSync, unlinkSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
-
-const SERVER = 'DESKTOP-3HO2U54\\SQLEXPRESS';
-const DATABASE = 'transferx';
+import { SERVER, DATABASE } from './dbConfig.js';
 
 /**
  * Execute SQL query using sqlcmd (Windows integrated auth)

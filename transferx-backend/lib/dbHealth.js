@@ -1,4 +1,5 @@
 import { execSync } from 'child_process';
+import { SERVER, DATABASE } from './dbConfig.js';
 
 /**
  * Health check using direct sqlcmd instead of Prisma
@@ -7,7 +8,7 @@ import { execSync } from 'child_process';
 export async function checkDatabaseHealth() {
     try {
         const result = execSync(
-            'sqlcmd -S DESKTOP-3HO2U54\\SQLEXPRESS -E -C -d transferx -Q "SELECT 1"',
+            `sqlcmd -S "${SERVER}" -E -C -d "${DATABASE}" -Q "SELECT 1"`,
             { encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] }
         );
 

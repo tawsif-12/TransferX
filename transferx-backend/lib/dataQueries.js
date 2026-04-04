@@ -2,9 +2,7 @@ import { execSync } from 'child_process';
 import { writeFileSync, unlinkSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
-
-const SERVER = 'DESKTOP-3HO2U54\\SQLEXPRESS';
-const DATABASE = 'transferx';
+import { SERVER, DATABASE } from './dbConfig.js';
 
 /**
  * Execute SQL query using sqlcmd
@@ -106,7 +104,7 @@ export async function getPlayers(limit = 500, filters = {}) {
                 'MIDFIELDER': ['Central Midfield', 'Defensive Midfield', 'Left Midfield', 'Attacking Midfield'],
                 'FORWARD': ['Centre-Forward', 'Left Winger', 'Right Winger', 'Second Striker']
             };
-            
+
             const positions = positionMap[filters.position] || [];
             if (positions.length > 0) {
                 const positionList = positions.map(p => `'${p.replace(/'/g, "''")}'`).join(',');
