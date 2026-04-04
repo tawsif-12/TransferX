@@ -26,16 +26,27 @@ export default function AdminPlayerEdit({
 
   useEffect(() => {
     if (player) {
+      // Properly parse date - handle both formats
+      let dateValue = '';
+      if (player.date_of_birth) {
+        // If it's a timestamp like "2002-01-01 00:00:00.0000000", extract just the date part
+        const dateStr = player.date_of_birth.split(' ')[0] || player.date_of_birth;
+        dateValue = dateStr;
+      }
+      
       setFormData({
         first_name: player.first_name || '',
         last_name: player.last_name || '',
-        date_of_birth: player.date_of_birth?.split('T')[0] || '',
+        date_of_birth: dateValue,
         position: player.position || 'MIDFIELDER',
         nationality: player.nationality || 'Bangladeshi',
-        current_club_id: player.current_club_id || '',
+        current_club_id: player.club_id || player.current_club_id || '',
         fee: player.fee || '',
-        marketValue: player.marketValue || '',
+        marketValue: player.marketValue || player.market_value || '',
       });
+      
+      console.log('📥 Form data loaded for player:', player.first_name, player.last_name);
+      console.log('   Date:', dateValue);
     }
   }, [player]);
 
@@ -48,8 +59,11 @@ export default function AdminPlayerEdit({
     if (!formData.last_name?.trim()) {
       newErrors.last_name = 'Last name is required';
     }
-    if (!formData.date_of_birth) {
+    if (!formData.date_of_birth || formData.date_of_birth.trim() === '') {
       newErrors.date_of_birth = 'Date of birth is required';
+    }
+    if (!formData.position || formData.position.trim() === '') {
+      newErrors.position = 'Position is required';
     }
     if (formData.marketValue && isNaN(parseFloat(formData.marketValue))) {
       newErrors.marketValue = 'Market value must be a number';
@@ -58,6 +72,7 @@ export default function AdminPlayerEdit({
       newErrors.fee = 'Fee must be a number';
     }
 
+    console.log('🔍 Validation check - errors found:', Object.keys(newErrors));
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -79,8 +94,14 @@ export default function AdminPlayerEdit({
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    console.log('📝 Form submitted');
+    console.log('Current formData:', formData);
+    
     if (validateForm()) {
+      console.log('✅ Validation passed, calling onSubmit');
       onSubmit(formData);
+    } else {
+      console.log('❌ Validation failed', errors);
     }
   };
 

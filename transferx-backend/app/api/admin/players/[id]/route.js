@@ -1,11 +1,56 @@
 import { NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
 import { requireAuth } from '@/lib/middleware';
 import { successResponse, errorResponse, handleRouteError } from '@/lib/response';
+import { execSync } from 'child_process';
+import { writeFileSync, unlinkSync } from 'fs';
+import { tmpdir } from 'os';
+import { join } from 'path';
+
+const SERVER = 'localhost\\SQLEXPRESS';
+const DATABASE = 'transferx';
+
+/**
+ * OPTIONS - Handle CORS preflight
+ */
+export async function OPTIONS(request) {
+  return new NextResponse(null, { status: 200 });
+}
+
+/**
+ * Execute SQL query using sqlcmd
+ */
+function executeSqlQuery(sqlQuery) {
+    let tempFile = null;
+    try {
+        tempFile = join(tmpdir(), `query_${Date.now()}_${Math.random().toString(36).substr(2, 9)}.sql`);
+        writeFileSync(tempFile, sqlQuery, 'utf-8');
+
+        const result = execSync(
+            `sqlcmd -S "${SERVER}" -E -C -d "${DATABASE}" -i "${tempFile}" -s "," -W`,
+            {
+                encoding: 'utf-8',
+                maxBuffer: 50 * 1024 * 1024,
+                timeout: 30000
+            }
+        );
+        return result;
+    } catch (error) {
+        console.error('SQL Query Error:', error.message);
+        throw error;
+    } finally {
+        if (tempFile) {
+            try {
+                unlinkSync(tempFile);
+            } catch (e) {
+                // ignore cleanup errors
+            }
+        }
+    }
+}
 
 /**
  * GET /api/admin/players/[id]
- * Get full player profile with career history
+ * Get player details
  */
 export async function GET(request, { params }) {
   try {
@@ -14,79 +59,54 @@ export async function GET(request, { params }) {
 
     const playerId = parseInt(params.id);
 
-    const player = await prisma.player.findUnique({
-      where: { player_id: playerId },
-      include: {
-        current_club: {
-          include: {
-            league: true,
-          },
-        },
-        agents: {
-          include: {
-            agent: true,
-          },
-        },
-        contracts: {
-          include: {
-            club: true,
-          },
-          orderBy: {
-            start_date: 'desc',
-          },
-        },
-        transfers_from: {
-          include: {
-            from_club: true,
-            to_club: true,
-          },
-          orderBy: {
-            transfer_date: 'desc',
-          },
-        },
-        transfer_history: {
-          include: {
-            transfer: {
-              include: {
-                from_club: true,
-                to_club: true,
-              },
-            },
-          },
-          orderBy: {
-            transfer_id: 'desc',
-          },
-        },
-      },
-    });
+    const query = `
+      SELECT p.player_id as id, p.first_name, p.last_name, 
+             p.date_of_birth, p.position, p.nationality, 
+             ISNULL(c.club_id, 0) as club_id, ISNULL(c.name, 'No Club') as club_name,
+             p.fee
+      FROM [Player] p
+      LEFT JOIN [Club] c ON p.current_club_id = c.club_id
+      WHERE p.player_id = ${playerId}
+    `;
 
-    if (!player) {
+    const result = executeSqlQuery(query);
+    const lines = result.trim().split('\n');
+    
+    // Find header and data rows
+    let dataStart = 0;
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i].includes('---')) {
+        dataStart = i + 1;
+        break;
+      }
+    }
+
+    if (dataStart === 0 || !lines[dataStart] || lines[dataStart].trim() === '') {
+      console.error(`❌ Player ${playerId} not found. DataStart: ${dataStart}, Lines available: ${lines.length}`);
       return errorResponse('Player not found', 404);
     }
 
-    // Get career statistics
-    const careerStats = await prisma.$queryRaw`
-      SELECT 
-        COUNT(DISTINCT c.club_id) as clubs_played,
-        COUNT(t.transfer_id) as total_transfers,
-        SUM(CAST(t.transfer_fee AS float)) as total_transfer_value,
-        COUNT(DISTINCT ct.contract_id) as total_contracts
-      FROM Player p
-      LEFT JOIN Transfer t ON p.player_id = t.player_id
-      LEFT JOIN Contract ct ON p.player_id = ct.player_id
-      WHERE p.player_id = ${playerId}
-      GROUP BY p.player_id
-    `;
+    const line = lines[dataStart].trim();
+    const values = line.split(',');
 
-    return successResponse({
-      ...player,
-      careerStats: careerStats[0] || {
-        clubs_played: 0,
-        total_transfers: 0,
-        total_transfer_value: 0,
-        total_contracts: 0,
-      },
-    });
+    if (values.length < 9) {
+      console.error(`❌ Insufficient fields. Expected 9, got ${values.length}`);
+      return errorResponse('Player not found', 404);
+    }
+
+    const player = {
+      id: parseInt(values[0]),
+      first_name: values[1]?.trim(),
+      last_name: values[2]?.trim(),
+      date_of_birth: values[3]?.trim(),
+      position: values[4]?.trim(),
+      nationality: values[5]?.trim(),
+      club_id: parseInt(values[6]),
+      club_name: values[7]?.trim(),
+      fee: values[8]?.trim(),
+    };
+
+    return successResponse(player);
   } catch (error) {
     return handleRouteError(error);
   }
@@ -104,6 +124,8 @@ export async function PUT(request, { params }) {
     const playerId = parseInt(params.id);
     const body = await request.json();
 
+    console.log(`🔄 Update player ${playerId}:`, JSON.stringify(body, null, 2));
+
     const {
       first_name,
       last_name,
@@ -116,71 +138,135 @@ export async function PUT(request, { params }) {
     } = body;
 
     // Check if player exists
-    const existingPlayer = await prisma.player.findUnique({
-      where: { player_id: playerId },
-    });
-
-    if (!existingPlayer) {
+    const checkQuery = `
+      SELECT player_id FROM [Player] WHERE player_id = ${playerId}
+    `;
+    
+    try {
+      const checkResult = executeSqlQuery(checkQuery);
+      if (!checkResult || !checkResult.includes(playerId.toString())) {
+        console.error(`❌ Player ${playerId} not found during check`);
+        return errorResponse('Player not found', 404);
+      }
+    } catch (err) {
+      console.error(`❌ Check query error: ${err.message}`);
       return errorResponse('Player not found', 404);
     }
 
-    // Check for duplicate (excluding current player)
-    if (first_name && last_name && date_of_birth) {
-      const duplicate = await prisma.player.findFirst({
-        where: {
-          AND: [
-            { player_id: { not: playerId } },
-            { first_name },
-            { last_name },
-            { date_of_birth: new Date(date_of_birth) },
-          ],
-        },
-      });
+    // Build UPDATE query with provided fields
+    const setClause = [];
+    
+    if (first_name !== undefined && first_name !== null && first_name !== '') {
+      setClause.push(`first_name = '${first_name.replace(/'/g, "''")}'`);
+    }
+    if (last_name !== undefined && last_name !== null && last_name !== '') {
+      setClause.push(`last_name = '${last_name.replace(/'/g, "''")}'`);
+    }
+    if (date_of_birth !== undefined && date_of_birth !== null && date_of_birth !== '') {
+      try {
+        // Handle date format - could be "2002-01-01" or full timestamp
+        let dob = date_of_birth;
+        if (dob.includes('T')) {
+          dob = dob.split('T')[0];
+        } else if (dob.includes(' ')) {
+          dob = dob.split(' ')[0];
+        }
+        setClause.push(`date_of_birth = '${dob}'`);
+        console.log(`  Setting date: ${dob}`);
+      } catch (e) {
+        console.error(`❌ Date parsing error: ${e.message}`);
+        return errorResponse('Invalid date format', 400);
+      }
+    }
+    if (position !== undefined && position !== null && position !== '') {
+      setClause.push(`position = '${position.replace(/'/g, "''")}'`);
+    }
+    if (nationality !== undefined && nationality !== null && nationality !== '') {
+      setClause.push(`nationality = '${nationality.replace(/'/g, "''")}'`);
+    }
+    if (current_club_id !== undefined && current_club_id !== null && current_club_id !== '') {
+      const clubId = parseInt(current_club_id) || 0;
+      setClause.push(`current_club_id = ${clubId}`);
+    }
+    if (fee !== undefined && fee !== null && fee !== '') {
+      const feeVal = parseFloat(fee) || 0;
+      setClause.push(`fee = ${feeVal}`);
+    }
 
-      if (duplicate) {
-        return errorResponse('Another player with the same name and date of birth already exists', 400);
+    if (setClause.length === 0) {
+      console.warn('⚠️ No fields to update');
+      return errorResponse('No fields to update', 400);
+    }
+
+    console.log(`  Fields to update: ${setClause.length}`);
+    setClause.forEach(clause => console.log(`    - ${clause}`));
+
+    // Update player
+    const updateQuery = `
+      UPDATE [Player]
+      SET ${setClause.join(', ')}
+      WHERE player_id = ${playerId}
+    `;
+
+    console.log(`⚙️ Executing update...`);
+    executeSqlQuery(updateQuery);
+    console.log(`✅ Update executed`);
+
+    // Get updated player data
+    const getQuery = `
+      SELECT p.player_id as id, p.first_name, p.last_name, 
+             p.date_of_birth, p.position, p.nationality, 
+             ISNULL(c.club_id, 0) as club_id, ISNULL(c.name, 'No Club') as club_name,
+             p.fee
+      FROM [Player] p
+      LEFT JOIN [Club] c ON p.current_club_id = c.club_id
+      WHERE p.player_id = ${playerId}
+    `;
+
+    console.log(`📥 Fetching updated player data...`);
+    const result = executeSqlQuery(getQuery);
+    const lines = result.trim().split('\n');
+    
+    let dataStart = 0;
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i].includes('---')) {
+        dataStart = i + 1;
+        break;
       }
     }
 
-    const updateData = {};
-    if (first_name !== undefined) updateData.first_name = first_name;
-    if (last_name !== undefined) updateData.last_name = last_name;
-    if (date_of_birth !== undefined) updateData.date_of_birth = new Date(date_of_birth);
-    if (position !== undefined) updateData.position = position;
-    if (nationality !== undefined) updateData.nationality = nationality;
-    if (current_club_id !== undefined) {
-      updateData.current_club_id = current_club_id ? parseInt(current_club_id) : null;
-    }
-    if (fee !== undefined) updateData.fee = fee ? parseFloat(fee) : null;
-    if (marketValue !== undefined) {
-      // Create or update PlayerProfile with market value
-      await prisma.playerProfile.upsert({
-        where: { userId: existingPlayer.player_id },
-        update: { marketValue: parseFloat(marketValue) || 0 },
-        create: {
-          userId: existingPlayer.player_id,
-          marketValue: parseFloat(marketValue) || 0,
-          position: position || 'MIDFIELDER',
-        },
-      });
+    if (!lines[dataStart] || lines[dataStart].trim() === '') {
+      console.error(`❌ Failed to fetch updated player data`);
+      return errorResponse('Updated player data not found', 500);
     }
 
-    const player = await prisma.player.update({
-      where: { player_id: playerId },
-      data: updateData,
-      include: {
-        current_club: true,
-        agents: {
-          include: {
-            agent: true,
-          },
-        },
-      },
-    });
+    const line = lines[dataStart].trim();
+    const values = line.split(',');
 
-    return successResponse(player);
+    if (values.length < 9) {
+      console.error(`❌ Insufficient fields in response: ${values.length}`);
+      return errorResponse('Invalid response from database', 500);
+    }
+
+    const updatedPlayer = {
+      id: parseInt(values[0]),
+      first_name: values[1]?.trim(),
+      last_name: values[2]?.trim(),
+      date_of_birth: values[3]?.trim(),
+      position: values[4]?.trim(),
+      nationality: values[5]?.trim(),
+      club_id: parseInt(values[6]),
+      club_name: values[7]?.trim(),
+      fee: values[8]?.trim(),
+    };
+
+    console.log(`✅ Player updated successfully:`, updatedPlayer);
+
+    return successResponse(updatedPlayer);
   } catch (error) {
-    return handleRouteError(error);
+    console.error('❌ Update player error:', error.message);
+    console.error('Stack:', error.stack);
+    return errorResponse('Failed to update player: ' + error.message, 500);
   }
 }
 
@@ -195,44 +281,57 @@ export async function DELETE(request, { params }) {
 
     const playerId = parseInt(params.id);
 
-    // Check if player exists
-    const player = await prisma.player.findUnique({
-      where: { player_id: playerId },
-      include: {
-        _count: {
-          select: {
-            transfers_from: true,
-            contracts: true,
-            transfer_history: true,
-          },
-        },
-      },
-    });
+    // Check if player exists and count related records
+    const checkQuery = `
+      SELECT 
+        p.player_id,
+        (SELECT COUNT(*) FROM [Transfer] WHERE player_id = ${playerId}) as transfer_count,
+        (SELECT COUNT(*) FROM [Contract] WHERE player_id = ${playerId}) as contract_count,
+        (SELECT COUNT(*) FROM [TransferHistory] WHERE player_id = ${playerId}) as transfer_history_count
+      FROM [Player] p
+      WHERE p.player_id = ${playerId}
+    `;
 
-    if (!player) {
+    const result = executeSqlQuery(checkQuery);
+    const lines = result.trim().split('\n');
+
+    let dataStart = 0;
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i].includes('---')) {
+        dataStart = i + 1;
+        break;
+      }
+    }
+
+    if (!lines[dataStart] || lines[dataStart].trim() === '') {
       return errorResponse('Player not found', 404);
     }
 
-    // Check if player has related records
-    const hasRelatedRecords = 
-      player._count.transfers_from > 0 ||
-      player._count.contracts > 0 ||
-      player._count.transfer_history > 0;
+    const line = lines[dataStart].trim();
+    const values = line.split(',');
 
-    if (hasRelatedRecords) {
+    const transferCount = parseInt(values[1]) || 0;
+    const contractCount = parseInt(values[2]) || 0;
+    const transferHistoryCount = parseInt(values[3]) || 0;
+
+    // Check if player has related records
+    if (transferCount > 0 || contractCount > 0 || transferHistoryCount > 0) {
       return errorResponse(
-        'Cannot delete player with existing transfers, contracts, or history. Please remove related records first.',
+        `Cannot delete player. Has ${transferCount} transfers, ${contractCount} contracts, and ${transferHistoryCount} transfer history records. Remove related records first.`,
         400
       );
     }
 
     // Delete player
-    await prisma.player.delete({
-      where: { player_id: playerId },
-    });
+    const deleteQuery = `
+      DELETE FROM [Player] WHERE player_id = ${playerId}
+    `;
+
+    executeSqlQuery(deleteQuery);
 
     return successResponse({ message: 'Player deleted successfully' });
   } catch (error) {
-    return handleRouteError(error);
+    console.error('❌ Delete player error:', error.message);
+    return errorResponse('Failed to delete player: ' + error.message, 500);
   }
 }
