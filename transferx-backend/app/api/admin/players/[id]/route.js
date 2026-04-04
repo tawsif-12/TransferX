@@ -112,6 +112,7 @@ export async function PUT(request, { params }) {
       nationality,
       current_club_id,
       fee,
+      marketValue,
     } = body;
 
     // Check if player exists
@@ -151,6 +152,18 @@ export async function PUT(request, { params }) {
       updateData.current_club_id = current_club_id ? parseInt(current_club_id) : null;
     }
     if (fee !== undefined) updateData.fee = fee ? parseFloat(fee) : null;
+    if (marketValue !== undefined) {
+      // Create or update PlayerProfile with market value
+      await prisma.playerProfile.upsert({
+        where: { userId: existingPlayer.player_id },
+        update: { marketValue: parseFloat(marketValue) || 0 },
+        create: {
+          userId: existingPlayer.player_id,
+          marketValue: parseFloat(marketValue) || 0,
+          position: position || 'MIDFIELDER',
+        },
+      });
+    }
 
     const player = await prisma.player.update({
       where: { player_id: playerId },

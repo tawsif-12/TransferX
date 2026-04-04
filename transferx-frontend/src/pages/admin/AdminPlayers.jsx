@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { useToast } from '../../context/ToastContext';
-import Modal from '../../components/Modal';
 import Button from '../../components/Button';
+import AdminPlayerEdit from './AdminPlayerEdit';
 import axiosClient from '../../api/axiosClient';
 import './AdminPlayers.css';
 
@@ -23,10 +23,11 @@ export default function AdminPlayers() {
         first_name: '',
         last_name: '',
         date_of_birth: '',
-        position: 'Midfielder',
+        position: 'MIDFIELDER',
         nationality: 'Bangladeshi',
         current_club_id: '',
         fee: '',
+        marketValue: '',
     });
     const [searchTerm, setSearchTerm] = useState('');
     const [filterPosition, setFilterPosition] = useState('');
@@ -68,41 +69,22 @@ export default function AdminPlayers() {
 
     const handleAdd = () => {
         setEditingPlayer(null);
-        setFormData({
-            first_name: '',
-            last_name: '',
-            date_of_birth: '',
-            position: 'Midfielder',
-            nationality: 'Bangladeshi',
-            current_club_id: '',
-            fee: '',
-        });
         setShowModal(true);
     };
 
     const handleEdit = (player) => {
         setEditingPlayer(player);
-        setFormData({
-            first_name: player.first_name,
-            last_name: player.last_name,
-            date_of_birth: player.date_of_birth?.split('T')[0] || '',
-            position: player.position || 'Midfielder',
-            nationality: player.nationality || 'Bangladeshi',
-            current_club_id: player.current_club_id || '',
-            fee: player.fee || '',
-        });
         setShowModal(true);
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const handleSubmit = async (data) => {
         try {
             setSubmitting(true);
             if (editingPlayer) {
-                await axiosClient.put(`/admin/players/${editingPlayer.player_id}`, formData);
+                await axiosClient.put(`/admin/players/${editingPlayer.id}`, data);
                 toast.success('Player updated successfully');
             } else {
-                await axiosClient.post('/admin/players', formData);
+                await axiosClient.post('/admin/players', data);
                 toast.success('Player added successfully');
             }
             setShowModal(false);
@@ -211,8 +193,8 @@ export default function AdminPlayers() {
                             </thead>
                             <tbody>
                                 {players.map(player => (
-                                    <tr key={player.player_id}>
-                                        <td>{player.player_id}</td>
+                                    <tr key={player.id}>
+                                        <td>{player.id}</td>
                                         <td className="player-name">
                                             {player.first_name} {player.last_name}
                                         </td>
@@ -221,14 +203,14 @@ export default function AdminPlayers() {
                                         </td>
                                         <td>{player.date_of_birth ? new Date(player.date_of_birth).toLocaleDateString() : 'N/A'}</td>
                                         <td>{player.nationality || 'N/A'}</td>
-                                        <td>{player.current_club?.name || 'Free Agent'}</td>
-                                        <td>{player._count?.transfers_from || 0}</td>
-                                        <td>{player._count?.contracts || 0}</td>
+                                        <td>{player.club_name || 'Free Agent'}</td>
+                                        <td>-</td>
+                                        <td>-</td>
                                         <td>
                                             <div className="action-btns">
                                                 <button
                                                     className="btn-view"
-                                                    onClick={() => handleViewProfile(player.player_id)}
+                                                    onClick={() => handleViewProfile(player.id)}
                                                     disabled={deletingId !== null}
                                                     title="View Profile"
                                                 >
@@ -244,11 +226,11 @@ export default function AdminPlayers() {
                                                 </button>
                                                 <button
                                                     className="btn-delete"
-                                                    onClick={() => handleDelete(player.player_id)}
-                                                    disabled={deletingId === player.player_id}
+                                                    onClick={() => handleDelete(player.id)}
+                                                    disabled={deletingId === player.id}
                                                     title="Delete"
                                                 >
-                                                    {deletingId === player.player_id ? '⏳' : '🗑️'}
+                                                    {deletingId === player.id ? '⏳' : '🗑️'}
                                                 </button>
                                             </div>
                                         </td>
@@ -265,108 +247,15 @@ export default function AdminPlayers() {
                     )}
                 </div>
 
-                {/* Modal */}
+                {/* Edit Player Modal */}
                 {showModal && (
-                    <Modal onClose={() => setShowModal(false)}>
-                        <h2 className="modal-title">
-                            {editingPlayer ? 'Edit Player' : 'Add New Player'}
-                        </h2>
-                        <form onSubmit={handleSubmit} className="player-form">
-                            <div className="form-row">
-                                <div className="form-group">
-                                    <label>First Name *</label>
-                                    <input
-                                        type="text"
-                                        required
-                                        value={formData.first_name}
-                                        onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
-                                    />
-                                </div>
-                                <div className="form-group">
-                                    <label>Last Name *</label>
-                                    <input
-                                        type="text"
-                                        required
-                                        value={formData.last_name}
-                                        onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="form-row">
-                                <div className="form-group">
-                                    <label>Date of Birth *</label>
-                                    <input
-                                        type="date"
-                                        required
-                                        value={formData.date_of_birth}
-                                        onChange={(e) => setFormData({ ...formData, date_of_birth: e.target.value })}
-                                    />
-                                </div>
-                                <div className="form-group">
-                                    <label>Position</label>
-                                    <select
-                                        value={formData.position}
-                                        onChange={(e) => setFormData({ ...formData, position: e.target.value })}
-                                    >
-                                        <option value="Goalkeeper">Goalkeeper</option>
-                                        <option value="Defender">Defender</option>
-                                        <option value="Midfielder">Midfielder</option>
-                                        <option value="Forward">Forward</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div className="form-row">
-                                <div className="form-group">
-                                    <label>Nationality</label>
-                                    <input
-                                        type="text"
-                                        value={formData.nationality}
-                                        onChange={(e) => setFormData({ ...formData, nationality: e.target.value })}
-                                    />
-                                </div>
-                                <div className="form-group">
-                                    <label>Current Club</label>
-                                    <select
-                                        value={formData.current_club_id}
-                                        onChange={(e) => setFormData({ ...formData, current_club_id: e.target.value })}
-                                    >
-                                        <option value="">Free Agent</option>
-                                        {clubs.map(club => (
-                                            <option key={club.club_id} value={club.club_id}>
-                                                {club.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div className="form-group">
-                                <label>Transfer Fee (€)</label>
-                                <input
-                                    type="number"
-                                    step="0.01"
-                                    value={formData.fee}
-                                    onChange={(e) => setFormData({ ...formData, fee: e.target.value })}
-                                />
-                            </div>
-
-                            <div className="form-actions">
-                                <button type="button" className="btn-cancel" onClick={() => setShowModal(false)} disabled={submitting}>
-                                    Cancel
-                                </button>
-                                <Button
-                                    type="submit"
-                                    variant="primary"
-                                    loading={submitting}
-                                    disabled={submitting}
-                                >
-                                    {editingPlayer ? 'Update Player' : 'Create Player'}
-                                </Button>
-                            </div>
-                        </form>
-                    </Modal>
+                    <AdminPlayerEdit
+                        player={editingPlayer}
+                        clubs={clubs}
+                        onClose={() => setShowModal(false)}
+                        onSubmit={handleSubmit}
+                        isSubmitting={submitting}
+                    />
                 )}
             </div>
         </div>
