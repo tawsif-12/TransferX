@@ -20,11 +20,22 @@ export default function AdminDashboard() {
     const loadDashboard = async () => {
         try {
             setLoading(true);
+            setError(''); // Clear previous errors
+            console.log('📊 Loading dashboard...');
             const response = await axiosClient.get('/admin/dashboard');
-            setAnalytics(response.data.data);
+            console.log('✅ Dashboard response:', response.data);
+            
+            if (response.data?.data) {
+                setAnalytics(response.data.data);
+                console.log('✅ Analytics set:', response.data.data);
+            } else {
+                console.error('❌ Invalid response format:', response.data);
+                setError('Invalid response format from server');
+            }
         } catch (err) {
-            console.error('Dashboard error:', err);
-            const msg = err.response?.data?.error || 'Failed to load dashboard';
+            console.error('❌ Dashboard error:', err);
+            const msg = err.response?.data?.error || err.message || 'Failed to load dashboard';
+            console.error('❌ Error message:', msg);
             setError(msg);
             toast.error(msg);
             if (err.response?.status === 401 || err.response?.status === 403) {
@@ -48,7 +59,27 @@ export default function AdminDashboard() {
 
                 {error && (
                     <div className="admin-content" style={{ textAlign: 'center', padding: '20px' }}>
-                        <p>{error}</p>
+                        <p style={{ color: '#e74c3c', fontSize: '16px' }}>❌ {error}</p>
+                        <button 
+                            onClick={loadDashboard}
+                            style={{ 
+                                marginTop: '10px', 
+                                padding: '8px 16px', 
+                                background: '#27ae60', 
+                                color: 'white', 
+                                border: 'none', 
+                                cursor: 'pointer',
+                                borderRadius: '4px'
+                            }}
+                        >
+                            Retry
+                        </button>
+                    </div>
+                )}
+
+                {!error && !analytics && (
+                    <div className="admin-content" style={{ textAlign: 'center', padding: '40px' }}>
+                        <p style={{ fontSize: '18px', color: '#7f8c8d' }}>⏳ Loading dashboard data...</p>
                     </div>
                 )}
 
@@ -58,32 +89,32 @@ export default function AdminDashboard() {
                         <div className="stats-section">
                             <h2 className="section-title">System Overview</h2>
                             <div className="stats-grid">
-                                <div className="stat-card" onClick={() => navigate('/admin/players')}>
+                                <div className="stat-card">
                                     <div className="stat-icon">⚽</div>
                                     <div className="stat-value">{analytics.overview.totalPlayers}</div>
                                     <div className="stat-label">Total Players</div>
                                 </div>
-                                <div className="stat-card" onClick={() => navigate('/admin/clubs')}>
+                                <div className="stat-card">
                                     <div className="stat-icon">🏟️</div>
                                     <div className="stat-value">{analytics.overview.totalClubs}</div>
                                     <div className="stat-label">Total Clubs</div>
                                 </div>
-                                <div className="stat-card" onClick={() => navigate('/admin/leagues')}>
+                                <div className="stat-card">
                                     <div className="stat-icon">🏆</div>
                                     <div className="stat-value">{analytics.overview.totalLeagues}</div>
                                     <div className="stat-label">Total Leagues</div>
                                 </div>
-                                <div className="stat-card" onClick={() => navigate('/admin/agents')}>
+                                <div className="stat-card">
                                     <div className="stat-icon">🤝</div>
                                     <div className="stat-value">{analytics.overview.totalAgents}</div>
                                     <div className="stat-label">Total Agents</div>
                                 </div>
-                                <div className="stat-card" onClick={() => navigate('/admin/transfers')}>
+                                <div className="stat-card">
                                     <div className="stat-icon">🔄</div>
                                     <div className="stat-value">{analytics.overview.totalTransfers}</div>
                                     <div className="stat-label">Total Transfers</div>
                                 </div>
-                                <div className="stat-card" onClick={() => navigate('/admin/contracts')}>
+                                <div className="stat-card">
                                     <div className="stat-icon">📋</div>
                                     <div className="stat-value">{analytics.overview.activeContracts}</div>
                                     <div className="stat-label">Active Contracts</div>
