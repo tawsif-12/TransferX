@@ -23,7 +23,7 @@ async function test() {
         await pool.connect();
         console.log('✅ Connected to SQL Server successfully!');
 
-        const result = require('child_process').execSync('sqlcmd -S localhost\\SQLEXPRESS -E -C -Q "SELECT SYSDATETIME()"', { encoding: 'utf-8' });
+        const result = require('child_process').execSync('sqlcmd -S .\\SQLEXPRESS -E -C -Q "SELECT SYSDATETIME()"', { encoding: 'utf-8' });
         console.log('Current time:', result);
 
         await pool.close();

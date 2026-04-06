@@ -8,8 +8,8 @@ export function getServerName() {
 
     if (!dbUrl) {
         // Default to local server
-        console.warn('DATABASE_URL not set, using local server DESKTOP-TDMF88Q\\SQLEXPRESS');
-        return 'DESKTOP-TDMF88Q\\SQLEXPRESS';
+        console.warn('DATABASE_URL not set, using local server .\\SQLEXPRESS');
+        return '.\\SQLEXPRESS';
     }
 
     // Parse sqlserver://SERVER\INSTANCE or sqlserver://SERVER:PORT
@@ -23,7 +23,7 @@ export function getServerName() {
     }
 
     // Fallback to local server
-    return 'DESKTOP-TDMF88Q\\SQLEXPRESS';
+    return '.\\SQLEXPRESS';
 }
 
 export const SERVER = getServerName();

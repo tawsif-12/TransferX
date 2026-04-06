@@ -2,13 +2,25 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { successResponse, handleRouteError } from '@/lib/response';
 import { getDashboardStats, getTransfers } from '@/lib/dataQueries';
+import apiCache from '@/lib/apiCache';
+
+const STATS_CACHE_KEY = 'dashboard_stats';
+const CACHE_TTL = 300; // 5 minutes
 
 /**
  * GET /api/stats
  * Get public dashboard statistics (no authentication required)
+ * Cached for 5 minutes to reduce database queries
  */
 export async function GET(request) {
   try {
+    // Check cache first
+    const cachedStats = apiCache.get(STATS_CACHE_KEY);
+    if (cachedStats) {
+      console.log('Returning cached stats');
+      return successResponse(cachedStats);
+    }
+
     try {
       const statsResult = await getDashboardStats();
       const transfersResult = await getTransfers({ limit: 5 });
@@ -54,10 +66,13 @@ export async function GET(request) {
           })),
       };
 
+      // Cache the response
+      apiCache.set(STATS_CACHE_KEY, response, CACHE_TTL);
+
       return successResponse(response);
     } catch (err) {
       console.error('Stats query failed:', err.message);
-      return successResponse({
+      const fallbackResponse = {
         overview: {
           totalPlayers: 0,
           totalClubs: 0,
@@ -71,7 +86,11 @@ export async function GET(request) {
         },
         recentTransfers: [],
         mostExpensiveTransfers: [],
-      });
+      };
+      
+      // Cache even fallback response to prevent repeated queries
+      apiCache.set(STATS_CACHE_KEY, fallbackResponse, 60);
+      return successResponse(fallbackResponse);
     }
   } catch (error) {
     console.error('Stats error:', error);

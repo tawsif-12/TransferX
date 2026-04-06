@@ -1,4 +1,5 @@
 import axios from 'axios';
+import responseCache from './cache';
 
 const axiosClient = axios.create({
   // Use VITE_API_BASE_URL when defined (via .env file) otherwise fall back to
@@ -17,12 +18,37 @@ const axiosClient = axios.create({
 axiosClient.interceptors.request.use((config) => {
   const token = localStorage.getItem('transferx_token');
   if (token) config.headers.Authorization = `Bearer ${token}`;
+  
+  // Check cache for GET requests (and if no-cache header not set)
+  if (config.method === 'get' && !config.headers['no-cache']) {
+    const cacheKey = `${config.baseURL}${config.url}`;
+    const cached = responseCache.get(cacheKey);
+    if (cached) {
+      // Return cached response as a resolved promise
+      return Promise.resolve({
+        data: cached,
+        status: 200,
+        statusText: 'OK (from cache)',
+        headers: {},
+        config,
+        fromCache: true
+      });
+    }
+  }
+  
   return config;
 }, (error) => Promise.reject(error));
 
-// On 401: clear storage and redirect to login
+// Cache GET responses and handle errors
 axiosClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Cache GET responses for 5 minutes
+    if (response.config.method === 'get' && !response.config.headers['no-cache']) {
+      const cacheKey = `${response.config.baseURL}${response.config.url}`;
+      responseCache.set(cacheKey, response.data);
+    }
+    return response;
+  },
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('transferx_token');

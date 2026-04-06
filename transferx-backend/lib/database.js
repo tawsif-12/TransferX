@@ -10,7 +10,7 @@ function extractServerNameFromDatabaseUrl() {
     const dbUrl = process.env.DATABASE_URL;
     if (!dbUrl) {
         // Default to local server
-        return 'DESKTOP-TDMF88Q\\SQLEXPRESS';
+        return '.\\SQLEXPRESS';
     }
 
     // Parse sqlserver://SERVER\INSTANCE;database=...
@@ -20,7 +20,7 @@ function extractServerNameFromDatabaseUrl() {
     }
 
     // Fallback to local server
-    return 'DESKTOP-TDMF88Q\\SQLEXPRESS';
+    return '.\\SQLEXPRESS';
 }
 
 /**
