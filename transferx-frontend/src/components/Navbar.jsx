@@ -52,14 +52,6 @@ export default function Navbar() {
           >
             Agents
           </Link>
-          {role === 'ADMIN' && (
-            <Link
-              to="/admin"
-              className={`navbar-link navbar-link--admin ${isActive('/admin') ? 'navbar-link--active' : ''}`}
-            >
-              🛡️ Admin
-            </Link>
-          )}
         </div>
 
         <div className="navbar-controls">
