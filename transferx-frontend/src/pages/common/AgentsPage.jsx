@@ -50,8 +50,6 @@ export default function AgentsPage() {
                         <div className="agents-grid">
                             {agents.map((agent) => {
                                 const playerCount = agent.players?.length || agent.player_count || 0;
-                                const marketValue = agent.market_value_managed || 0;
-                                const formattedValue = marketValue ? `$${(marketValue / 1000000).toFixed(1)}M` : 'N/A';
 
                                 return (
                                     <div key={agent.agent_id} className="agent-card">
@@ -66,31 +64,13 @@ export default function AgentsPage() {
                                         <div className="agent-details">
                                             <div className="contact-item">
                                                 <div>
-                                                    <div className="label">Age</div>
-                                                    <div className="value">{agent.age || 'N/A'}</div>
+                                                    <div className="label">Agent ID</div>
+                                                    <div className="value">#{agent.agent_id}</div>
                                                 </div>
                                             </div>
                                             <div className="contact-item">
                                                 <div>
-                                                    <div className="label">Experience</div>
-                                                    <div className="value">{agent.experience_years || 0} years</div>
-                                                </div>
-                                            </div>
-                                            <div className="contact-item">
-                                                <div>
-                                                    <div className="label">Market Value Managed</div>
-                                                    <div className="value">{formattedValue}</div>
-                                                </div>
-                                            </div>
-                                            <div className="contact-item">
-                                                <div>
-                                                    <div className="label">Email</div>
-                                                    <div className="value">{agent.contact_info || 'N/A'}</div>
-                                                </div>
-                                            </div>
-                                            <div className="contact-item">
-                                                <div>
-                                                    <div className="label">Clients</div>
+                                                    <div className="label">Clients Managed</div>
                                                     <div className="value">
                                                         {playerCount} Player{playerCount !== 1 ? 's' : ''}
                                                     </div>
@@ -98,7 +78,7 @@ export default function AgentsPage() {
                                             </div>
                                         </div>
 
-                                        <button className="agent-card-btn">Contact Agent</button>
+                                        <button className="agent-card-btn">View Details</button>
                                     </div>
                                 );
                             })}

@@ -271,20 +271,16 @@ SET NOCOUNT ON;
 SELECT
     CAST(a.agent_id as VARCHAR(10)) as agent_id,
     a.agent_name,
-    CAST(ISNULL(a.age, 0) as VARCHAR(10)) as age,
-    CAST(ISNULL(a.experience_years, 0) as VARCHAR(10)) as experience_years,
-    LTRIM(STR(ISNULL(a.market_value_managed, 0), 20, 2)) as market_value_managed,
-    CAST(ISNULL(a.contact_info, '') as VARCHAR(255)) as contact_info,
     CAST(COUNT(DISTINCT pa.player_id) as VARCHAR(10)) as player_count
 FROM Agent a
 LEFT JOIN PlayerAgent pa ON a.agent_id = pa.agent_id
 WHERE ${whereClause}
-GROUP BY a.agent_id, a.agent_name, a.age, a.experience_years, a.market_value_managed, a.contact_info
+GROUP BY a.agent_id, a.agent_name
 ORDER BY a.agent_id
 `;
 
         const output = executeSqlQuery(query);
-        const columns = ['agent_id', 'agent_name', 'age', 'experience_years', 'market_value_managed', 'contact_info', 'player_count'];
+        const columns = ['agent_id', 'agent_name', 'player_count'];
         const rows = parseSqlOutput(output, columns);
 
         return {
@@ -292,10 +288,6 @@ ORDER BY a.agent_id
             data: rows.map(row => ({
                 agent_id: parseInt(row.agent_id),
                 agent_name: row.agent_name,
-                age: parseInt(row.age || 0),
-                experience_years: parseInt(row.experience_years || 0),
-                market_value_managed: parseFloat(row.market_value_managed || 0),
-                contact_info: row.contact_info,
                 player_count: parseInt(row.player_count || 0),
                 players: [],
             }))
@@ -563,8 +555,7 @@ SELECT TOP 500
     tc.name as to_club_name,
     CONVERT(VARCHAR(10), t.transfer_date, 121) as transfer_date,
     LTRIM(STR(ISNULL(t.transfer_fee, 0), 20, 2)) as transfer_fee,
-    t.transfer_type,
-    CAST(ISNULL(t.notes_of_transfer, '') as VARCHAR(500)) as notes_of_transfer
+    t.transfer_type
 FROM Transfer t
 LEFT JOIN Player p ON t.player_id = p.player_id
 LEFT JOIN Club fc ON t.from_club_id = fc.club_id
@@ -574,7 +565,7 @@ ORDER BY t.transfer_date DESC
 `;
 
         const output = executeSqlQuery(query);
-        const columns = ['transfer_id', 'player_id', 'first_name', 'last_name', 'from_club_id', 'from_club_name', 'to_club_id', 'to_club_name', 'transfer_date', 'transfer_fee', 'transfer_type', 'notes_of_transfer'];
+        const columns = ['transfer_id', 'player_id', 'first_name', 'last_name', 'from_club_id', 'from_club_name', 'to_club_id', 'to_club_name', 'transfer_date', 'transfer_fee', 'transfer_type'];
         const rows = parseSqlOutput(output, columns);
 
         return {
@@ -593,7 +584,6 @@ ORDER BY t.transfer_date DESC
                 transfer_date: row.transfer_date ? new Date(row.transfer_date) : null,
                 transfer_fee: row.transfer_fee ? parseFloat(row.transfer_fee) : null,
                 transfer_type: row.transfer_type,
-                notes_of_transfer: row.notes_of_transfer,
             }))
         };
     } catch (error) {
