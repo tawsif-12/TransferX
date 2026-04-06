@@ -18,24 +18,6 @@ const axiosClient = axios.create({
 axiosClient.interceptors.request.use((config) => {
   const token = localStorage.getItem('transferx_token');
   if (token) config.headers.Authorization = `Bearer ${token}`;
-  
-  // Check cache for GET requests (and if no-cache header not set)
-  if (config.method === 'get' && !config.headers['no-cache']) {
-    const cacheKey = `${config.baseURL}${config.url}`;
-    const cached = responseCache.get(cacheKey);
-    if (cached) {
-      // Return cached response as a resolved promise
-      return Promise.resolve({
-        data: cached,
-        status: 200,
-        statusText: 'OK (from cache)',
-        headers: {},
-        config,
-        fromCache: true
-      });
-    }
-  }
-  
   return config;
 }, (error) => Promise.reject(error));
 

@@ -129,7 +129,7 @@ SELECT TOP ${limit}
     position,
     nationality,
     CONVERT(VARCHAR(10), date_of_birth, 121) as date_of_birth,
-    CAST(ISNULL(fee, 0) as VARCHAR(32)) as fee
+    LTRIM(STR(ISNULL(fee, 0), 20, 2)) as fee
 FROM Player
 WHERE ${whereClause}
 ORDER BY player_id
@@ -273,7 +273,7 @@ SELECT
     a.agent_name,
     CAST(ISNULL(a.age, 0) as VARCHAR(10)) as age,
     CAST(ISNULL(a.experience_years, 0) as VARCHAR(10)) as experience_years,
-    CAST(ISNULL(a.market_value_managed, 0) as VARCHAR(20)) as market_value_managed,
+    LTRIM(STR(ISNULL(a.market_value_managed, 0), 20, 2)) as market_value_managed,
     CAST(ISNULL(a.contact_info, '') as VARCHAR(255)) as contact_info,
     CAST(COUNT(DISTINCT pa.player_id) as VARCHAR(10)) as player_count
 FROM Agent a
@@ -344,6 +344,7 @@ ORDER BY league_id
  */
 export async function getPlayerById(playerId) {
     try {
+        console.log('[getPlayerById] Fetching player:', playerId);
         const query = `
 SET NOCOUNT ON;
 SELECT
@@ -354,16 +355,19 @@ SELECT
     position,
     nationality,
     CONVERT(VARCHAR(10), date_of_birth, 121) as date_of_birth,
-    CAST(ISNULL(fee, 0) as VARCHAR(20)) as fee
+    LTRIM(STR(ISNULL(fee, 0), 20, 2)) as fee
 FROM Player
 WHERE player_id = ${parseInt(playerId)}
 `;
 
         const output = executeSqlQuery(query);
+        console.log('[getPlayerById] SQL output:', output.substring(0, 200));
         const columns = ['player_id', 'current_club_id', 'first_name', 'last_name', 'position', 'nationality', 'date_of_birth', 'fee'];
         const rows = parseSqlOutput(output, columns);
+        console.log('[getPlayerById] Parsed rows:', rows.length);
 
         if (rows.length === 0) {
+            console.log('[getPlayerById] Player not found');
             return { success: true, data: null };
         }
 
@@ -378,11 +382,11 @@ WHERE player_id = ${parseInt(playerId)}
                 position: row.position,
                 nationality: row.nationality,
                 date_of_birth: row.date_of_birth ? new Date(row.date_of_birth) : null,
-                fee: row.fee ? parseFloat(row.fee) : null,
+                fee: row.fee ? parseFloat(row.fee.trim()) : null,
             }
         };
     } catch (error) {
-        console.error('Error getting player by ID:', error.message);
+        console.error('[getPlayerById] Error getting player by ID:', error.message);
         return { success: false, error: error.message, data: null };
     }
 }
@@ -558,7 +562,7 @@ SELECT TOP 500
     CAST(t.to_club_id as VARCHAR(10)) as to_club_id,
     tc.name as to_club_name,
     CONVERT(VARCHAR(10), t.transfer_date, 121) as transfer_date,
-    CAST(ISNULL(t.transfer_fee, 0) as VARCHAR(20)) as transfer_fee,
+    LTRIM(STR(ISNULL(t.transfer_fee, 0), 20, 2)) as transfer_fee,
     t.transfer_type,
     CAST(ISNULL(t.notes_of_transfer, '') as VARCHAR(500)) as notes_of_transfer
 FROM Transfer t
@@ -616,7 +620,7 @@ SELECT 'TOTAL_AGENTS', CAST(COUNT(DISTINCT agent_id) as VARCHAR(20)) FROM Agent
 UNION ALL
 SELECT 'TOTAL_TRANSFERS', CAST(COUNT(DISTINCT transfer_id) as VARCHAR(20)) FROM Transfer
 UNION ALL
-SELECT 'TOTAL_TRANSFER_VALUE', CAST(CAST(ISNULL(SUM(transfer_fee), 0) as BIGINT) as VARCHAR(20)) FROM Transfer
+SELECT 'TOTAL_TRANSFER_VALUE', LTRIM(STR(ISNULL(SUM(transfer_fee), 0), 20, 2)) FROM Transfer
 `;
 
         const output = executeSqlQuery(query);

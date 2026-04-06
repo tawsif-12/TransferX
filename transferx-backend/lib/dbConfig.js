@@ -28,3 +28,9 @@ export function getServerName() {
 
 export const SERVER = getServerName();
 export const DATABASE = 'transferx';
+
+// Debug logging
+if (typeof console !== 'undefined') {
+    console.log('[dbConfig.js] DATABASE_URL:', process.env.DATABASE_URL);
+    console.log('[dbConfig.js] Extracted SERVER:', SERVER);
+}

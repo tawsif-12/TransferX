@@ -12,16 +12,19 @@ export async function GET(request, { params }) {
     try {
         const { id } = await params;
         const playerId = parseInt(id);
+        console.log('[GET /api/players/[id]] Requesting player:', playerId);
 
         try {
             const result = await getPlayerById(playerId);
+            console.log('[GET /api/players/[id]] Result:', JSON.stringify(result));
             if (result.success && result.data) {
                 return successResponse(result.data);
             } else {
+                console.log('[GET /api/players/[id]] Player not found or no data');
                 return errorResponse('Player not found', 404);
             }
         } catch (err) {
-            console.error('Query failed:', err.message);
+            console.error('[GET /api/players/[id]] Query failed:', err.message);
             return errorResponse('Failed to fetch player', 500);
         }
     } catch (error) {

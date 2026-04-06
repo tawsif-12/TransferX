@@ -13,8 +13,12 @@ function executeSqlQuery(sqlQuery) {
         tempFile = join(tmpdir(), `query_${Date.now()}_${Math.random().toString(36).substr(2, 9)}.sql`);
         writeFileSync(tempFile, sqlQuery, 'utf-8');
 
+        const sqlcmdCommand = `sqlcmd -S "${SERVER}" -E -C -d "${DATABASE}" -i "${tempFile}" -s "," -W`;
+        console.log('[authDB.js] Executing sqlcmd with SERVER:', SERVER, 'DATABASE:', DATABASE);
+        console.log('[authDB.js] Full command:', sqlcmdCommand);
+
         const result = execSync(
-            `sqlcmd -S "${SERVER}" -E -C -d "${DATABASE}" -i "${tempFile}" -s "," -W`,
+            sqlcmdCommand,
             {
                 encoding: 'utf-8',
                 maxBuffer: 50 * 1024 * 1024,
