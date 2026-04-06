@@ -24,7 +24,7 @@ export default function AdminDashboard() {
             console.log('📊 Loading dashboard...');
             const response = await axiosClient.get('/admin/dashboard');
             console.log('✅ Dashboard response:', response.data);
-            
+
             if (response.data?.data) {
                 setAnalytics(response.data.data);
                 console.log('✅ Analytics set:', response.data.data);
@@ -60,14 +60,14 @@ export default function AdminDashboard() {
                 {error && (
                     <div className="admin-content" style={{ textAlign: 'center', padding: '20px' }}>
                         <p style={{ color: '#e74c3c', fontSize: '16px' }}>❌ {error}</p>
-                        <button 
+                        <button
                             onClick={loadDashboard}
-                            style={{ 
-                                marginTop: '10px', 
-                                padding: '8px 16px', 
-                                background: '#27ae60', 
-                                color: 'white', 
-                                border: 'none', 
+                            style={{
+                                marginTop: '10px',
+                                padding: '8px 16px',
+                                background: '#27ae60',
+                                color: 'white',
+                                border: 'none',
                                 cursor: 'pointer',
                                 borderRadius: '4px'
                             }}

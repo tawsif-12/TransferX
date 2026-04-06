@@ -27,32 +27,34 @@ export default function Navbar() {
           </span>
         </Link>
 
-        <div className="navbar-links">
-          <Link
-            to="/players"
-            className={`navbar-link ${isActive('/players') ? 'navbar-link--active' : ''}`}
-          >
-            Players
-          </Link>
-          <Link
-            to="/clubs"
-            className={`navbar-link ${isActive('/clubs') ? 'navbar-link--active' : ''}`}
-          >
-            Clubs
-          </Link>
-          <Link
-            to="/transfers"
-            className={`navbar-link ${isActive('/transfers') ? 'navbar-link--active' : ''}`}
-          >
-            Transfers
-          </Link>
-          <Link
-            to="/agents"
-            className={`navbar-link ${isActive('/agents') ? 'navbar-link--active' : ''}`}
-          >
-            Agents
-          </Link>
-        </div>
+        {role !== 'ADMIN' && (
+          <div className="navbar-links">
+            <Link
+              to="/players"
+              className={`navbar-link ${isActive('/players') ? 'navbar-link--active' : ''}`}
+            >
+              Players
+            </Link>
+            <Link
+              to="/clubs"
+              className={`navbar-link ${isActive('/clubs') ? 'navbar-link--active' : ''}`}
+            >
+              Clubs
+            </Link>
+            <Link
+              to="/transfers"
+              className={`navbar-link ${isActive('/transfers') ? 'navbar-link--active' : ''}`}
+            >
+              Transfers
+            </Link>
+            <Link
+              to="/agents"
+              className={`navbar-link ${isActive('/agents') ? 'navbar-link--active' : ''}`}
+            >
+              Agents
+            </Link>
+          </div>
+        )}
 
         <div className="navbar-controls">
           <button
