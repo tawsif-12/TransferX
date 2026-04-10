@@ -200,10 +200,11 @@ export async function POST(request) {
       // Insert player using SQL
       const dob = date_of_birth ? new Date(date_of_birth).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
       const insertQuery = `
-        INSERT INTO [Player] (first_name, last_name, date_of_birth, position, nationality, current_club_id, fee, created_at)
+        INSERT INTO [Player] (first_name, last_name, date_of_birth, position, nationality, current_club_id, fee)
         VALUES ('${first_name.replace(/'/g, "''")}', '${last_name.replace(/'/g, "''")}', '${dob}', 
                 '${(position || '').replace(/'/g, "''")}', '${(nationality || '').replace(/'/g, "''")}', 
-                ${current_club_id || 0}, ${fee || 0}, GETDATE())
+                ${current_club_id || 0}, ${fee || 0})
+        SELECT CAST(SCOPE_IDENTITY() as int) as id
       `;
       
       executeSqlQuery(insertQuery);
