@@ -12,6 +12,7 @@ const axiosClient = axios.create({
     import.meta.env.VITE_PUBLIC_API_URL ||
     'http://localhost:3001/api',
   headers: { 'Content-Type': 'application/json' },
+  timeout: 30000, // 30 second timeout for requests
 });
 
 // Attach JWT to every outgoing request

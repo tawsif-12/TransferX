@@ -19,6 +19,7 @@ export default function AdminPlayers() {
     const [editingPlayer, setEditingPlayer] = useState(null);
     const [submitting, setSubmitting] = useState(false);
     const [deletingId, setDeletingId] = useState(null);
+
     const [formData, setFormData] = useState({
         first_name: '',
         last_name: '',
@@ -42,18 +43,23 @@ export default function AdminPlayers() {
         try {
             setLoading(true);
             setError('');
-            console.log('📋 Loading players...');
             const params = {};
             if (searchTerm) params.search = searchTerm;
             if (filterPosition) params.position = filterPosition;
             if (filterClub) params.clubId = filterClub;
 
-            const response = await axiosClient.get('/admin/players', { params });
-            console.log('✅ Players loaded:', response.data.data.players.length);
+            const response = await axiosClient.get('/admin/players', { 
+                params
+            });
+            
+            if (!response.data.data || !response.data.data.players) {
+                throw new Error('Invalid response structure');
+            }
+            
             setPlayers(response.data.data.players);
             return response.data.data.players;
         } catch (err) {
-            console.error('❌ Load players error:', err);
+            console.error('Load players error:', err.message);
             const msg = err.response?.data?.error || 'Failed to load players';
             setError(msg);
             toast.error(msg);
@@ -95,6 +101,16 @@ export default function AdminPlayers() {
             setSubmitting(true);
             console.log('💾 Handling submit, editing:', !!editingPlayer);
             console.log('📊 Data to save:', data);
+            
+            // Debug: Check token before sending request
+            const currentToken = localStorage.getItem('transferx_token');
+            const currentRole = localStorage.getItem('transferx_role');
+            console.log('🔐 Current auth state:', {
+                hasToken: !!currentToken,
+                tokenLength: currentToken?.length,
+                role: currentRole,
+                tokenPreview: currentToken ? `${currentToken.substring(0,20)}...` : 'NO TOKEN'
+            });
             
             if (editingPlayer) {
                 console.log(`🔄 Updating player ${editingPlayer.id}...`);

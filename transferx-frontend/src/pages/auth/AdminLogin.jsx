@@ -42,15 +42,27 @@ export default function AdminLogin() {
       console.log('🔐 Attempting login with:', sanitizedEmail);
 
       const res = await axiosClient.post('/auth/admin-login', { email: sanitizedEmail, password });
-      console.log('✅ Login response:', res.data);
+      console.log('✅ Full login response:', res);
+      console.log('✅ Login response data:', res.data);
+      console.log('✅ Response data.data:', res.data.data);
+      
+      if (!res.data.data) {
+        throw new Error('Invalid response structure: missing data field');
+      }
       
       const { token, role, user } = res.data.data;
+      console.log('🎫 Extracted token:', token?.substring(0, 20) + '...');
+      console.log('👤 Extracted role:', role);
+      console.log('👥 Extracted user:', user);
+      
       toast.success('Welcome back, admin!');
       auth.login(token, role, user);
       console.log('📍 Navigating to dashboard...');
       navigate('/admin/dashboard');
     } catch (err) {
       console.error('❌ Login error:', err);
+      console.error('❌ Error response:', err.response);
+      console.error('❌ Error message:', err.message);
       const errorMessage = err.response?.data?.error || err.message || 'Login failed';
       toast.error(errorMessage);
     } finally {
