@@ -8,16 +8,38 @@ import './PlayersPage.css';
 
 export default function PlayersPage() {
     const [players, setPlayers] = useState([]);
+    const [clubs, setClubs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
     const [filterPosition, setFilterPosition] = useState('');
+    const [filterClub, setFilterClub] = useState('');
     const toast = useToast();
     const [sortBy, setSortBy] = useState('name');
 
     useEffect(() => {
+        loadClubs();
+    }, []);
+
+    useEffect(() => {
         loadPlayers();
-    }, [searchTerm, filterPosition, sortBy]);
+    }, [searchTerm, filterPosition, filterClub, sortBy]);
+
+    const loadClubs = async () => {
+        try {
+            const response = await axiosClient.get('/clubs');
+            const clubsData = response.data.data || response.data || [];
+            const sortedClubs = clubsData
+                .sort((a, b) => a.name.localeCompare(b.name))
+                .map(club => ({
+                    id: club.club_id,
+                    name: club.name
+                }));
+            setClubs(sortedClubs);
+        } catch (err) {
+            console.error('Error loading clubs:', err);
+        }
+    };
 
     const loadPlayers = async () => {
         try {
@@ -27,6 +49,7 @@ export default function PlayersPage() {
             const params = {};
             if (searchTerm) params.name = searchTerm;
             if (filterPosition) params.position = filterPosition;
+            if (filterClub) params.clubId = filterClub;
 
             const response = await axiosClient.get('/players', { params });
             let playersData = (response.data.data || response.data || []).map(p => ({
@@ -114,6 +137,16 @@ export default function PlayersPage() {
                             <option value="DEFENDER">Defender</option>
                             <option value="MIDFIELDER">Midfielder</option>
                             <option value="FORWARD">Forward</option>
+                        </select>
+                        <select
+                            value={filterClub}
+                            onChange={(e) => setFilterClub(e.target.value)}
+                            className="filter-select"
+                        >
+                            <option value="">All Clubs</option>
+                            {clubs.map(club => (
+                                <option key={club.id} value={club.id}>{club.name}</option>
+                            ))}
                         </select>
                         <select
                             value={sortBy}
