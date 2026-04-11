@@ -22,21 +22,26 @@ export default function Dashboard() {
     try {
       setLoading(true);
       const response = await axiosClient.get('/stats');
-      const data = response.data.data;
+      const data = response.data?.data || response.data;
+      
+      if (!data || !data.overview) {
+        console.error('Invalid stats response:', response.data);
+        throw new Error('Invalid stats response structure');
+      }
       
       setStats({
-        totalPlayers: data.overview.totalPlayers,
-        totalClubs: data.overview.totalClubs,
-        totalLeagues: data.overview.totalLeagues,
-        transfersThisSeason: data.overview.transfersThisSeason,
-        transfersThisMonth: data.overview.transfersThisMonth,
-        totalTransferValue: data.overview.totalTransferValue,
-        totalPlayerMarketValue: data.overview.totalPlayerMarketValue,
+        totalPlayers: data.overview.totalPlayers || 0,
+        totalClubs: data.overview.totalClubs || 0,
+        totalLeagues: data.overview.totalLeagues || 0,
+        transfersThisSeason: data.overview.transfersThisSeason || data.overview.totalTransfers || 0,
+        transfersThisMonth: data.overview.transfersThisMonth || 0,
+        totalTransferValue: data.overview.totalTransferValue || 0,
+        totalPlayerMarketValue: data.overview.totalPlayerMarketValue || 0,
       });
-      setRecentTransfers(data.recentTransfers);
+      setRecentTransfers(data.recentTransfers || []);
     } catch (err) {
       console.error('Dashboard error:', err);
-      const msg = err.response?.data?.error || 'Failed to load dashboard data.';
+      const msg = err.response?.data?.error || err.message || 'Failed to load dashboard data.';
       setError(msg);
       toast.error(msg);
     } finally {
@@ -45,14 +50,31 @@ export default function Dashboard() {
   };
 
   if (loading) return <LoadingSpinner fullPage />;
-  if (error) return (
-    <div>
-      <Navbar />
-      <div style={{ padding: '40px', textAlign: 'center' }}>
-        <p>{error}</p>
+  
+  if (error) {
+    return (
+      <div>
+        <Navbar />
+        <div style={{ padding: '40px', textAlign: 'center' }}>
+          <p>{error}</p>
+          <button onClick={loadDashboard} style={{ marginTop: '20px', padding: '10px 20px', cursor: 'pointer' }}>
+            Try Again
+          </button>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
+  
+  if (!stats) {
+    return (
+      <div>
+        <Navbar />
+        <div style={{ padding: '40px', textAlign: 'center' }}>
+          <p>No dashboard data available</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>

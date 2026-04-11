@@ -8,37 +8,32 @@ import { successResponse, errorResponse, handleRouteError } from '@/lib/response
  */
 export async function GET(request, { params }) {
   try {
-    const clubId = parseInt(params.id);
+    const { id } = await params;
+    const clubId = parseInt(id);
 
     // Verify club exists
     const club = await prisma.club.findUnique({
-      where: { id: clubId },
+      where: { club_id: clubId },
     });
 
     if (!club) {
       return errorResponse('Club not found', 404);
     }
 
-    const players = await prisma.playerProfile.findMany({
+    // Get players from Player model
+    const players = await prisma.player.findMany({
       where: {
-        currentClubId: clubId,
+        current_club_id: clubId,
       },
       include: {
-        user: {
-          select: {
-            id: true,
-            fullName: true,
-            email: true,
-          },
-        },
-        currentClub: {
+        current_club: {
           include: {
             league: true,
           },
         },
       },
       orderBy: {
-        rating: 'desc',
+        position: 'asc',
       },
     });
 

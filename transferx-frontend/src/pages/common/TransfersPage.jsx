@@ -22,13 +22,31 @@ export default function TransfersPage() {
     const loadTransfers = async () => {
         try {
             setLoading(true);
+            setError('');
+            console.log('Fetching transfers from /transfers');
+            
+            // Fetch transfers without pagination - API returns all transfers
             const response = await axiosClient.get('/transfers');
-            setTransfers(response.data.data || []);
+            
+            console.log('Transfers response:', response.data);
+            
+            // Handle response structure: { data: { data: [...], pagination: {...} } }
+            let transfersData = response.data?.data?.data || response.data?.data || [];
+            
+            if (!Array.isArray(transfersData)) {
+                console.error('Invalid transfers data format:', transfersData);
+                setTransfers([]);
+                return;
+            }
+            
+            console.log(`✓ Loaded ${transfersData.length} transfers`);
+            setTransfers(transfersData);
         } catch (err) {
             console.error('Transfers error:', err);
-            const msg = err.response?.data?.error || 'Failed to load transfers.';
+            const msg = err.response?.data?.error || err.message || 'Failed to load transfers.';
             setError(msg);
             toast.error(msg);
+            setTransfers([]);
         } finally {
             setLoading(false);
         }
@@ -111,7 +129,37 @@ export default function TransfersPage() {
         };
     }, [transfers]);
 
-    if (loading) return <LoadingSpinner fullPage />;
+    if (loading && transfers.length === 0) return <LoadingSpinner fullPage />;
+    
+    if (error) {
+        return (
+            <div>
+                <Navbar />
+                <div style={{ padding: '40px', textAlign: 'center' }}>
+                    <h2>Error Loading Transfers</h2>
+                    <p>{error}</p>
+                    <button 
+                        onClick={loadTransfers} 
+                        style={{ marginTop: '20px', padding: '10px 20px', cursor: 'pointer', fontSize: '16px' }}
+                    >
+                        Try Again
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    if (transfers.length === 0 && !loading) {
+        return (
+            <div>
+                <Navbar />
+                <div style={{ padding: '40px', textAlign: 'center' }}>
+                    <h2>No Transfers Found</h2>
+                    <p>There are currently no transfer records in the database.</p>
+                </div>
+            </div>
+        );
+    }
 
     const formatDate = (dateStr) => {
         const date = new Date(dateStr);

@@ -90,7 +90,8 @@ function parseSqlOutput(output, columnNames) {
  */
 export async function getPlayers(limit = 500, filters = {}) {
     try {
-        let whereClause = '1=1';
+        // Only show players currently in Bangladesh Premier League clubs (not free agents or without club)
+        let whereClause = '(current_club_id IS NOT NULL AND current_club_id NOT IN (999, 0))';
 
         if (filters.name) {
             const escapedName = filters.name.replace(/'/g, "''");
