@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { useToast } from '../../context/ToastContext';
@@ -9,6 +10,7 @@ export default function ClubsPage() {
     const [clubs, setClubs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const navigate = useNavigate();
     const toast = useToast();
 
     useEffect(() => {
@@ -79,7 +81,12 @@ export default function ClubsPage() {
                                                 </div>
                                             )}
                                         </div>
-                                        <button className="club-card-btn">View Details</button>
+                                        <button 
+                                            className="club-card-btn"
+                                            onClick={() => navigate(`/clubs/${club.club_id}`)}
+                                        >
+                                            View Details
+                                        </button>
                                     </div>
                                 );
                             })}

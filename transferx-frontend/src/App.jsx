@@ -20,6 +20,7 @@ const PlayerProfile = lazy(() => import('./pages/player/PlayerProfile'));
 // Common pages
 const PlayersPage = lazy(() => import('./pages/common/PlayersPage'));
 const ClubsPage = lazy(() => import('./pages/common/ClubsPage'));
+const ClubDetail = lazy(() => import('./pages/common/ClubDetail'));
 const TransfersPage = lazy(() => import('./pages/common/TransfersPage'));
 const AgentsPage = lazy(() => import('./pages/common/AgentsPage'));
 
@@ -75,7 +76,7 @@ export default function App() {
               <Route path="/players" element={<Suspense fallback={<PageLoadingFallback />}><PlayersPage /></Suspense>} />
               <Route path="/players/:id" element={<Suspense fallback={<PageLoadingFallback />}><PlayerProfile /></Suspense>} />
               <Route path="/clubs" element={<Suspense fallback={<PageLoadingFallback />}><ClubsPage /></Suspense>} />
-              <Route path="/clubs/:id" element={<PagePlaceholder title="Club Detail" />} />
+              <Route path="/clubs/:id" element={<Suspense fallback={<PageLoadingFallback />}><ClubDetail /></Suspense>} />
               <Route path="/transfers" element={<Suspense fallback={<PageLoadingFallback />}><TransfersPage /></Suspense>} />
               <Route path="/transfers/:id" element={<PagePlaceholder title="Transfer Detail" />} />
               <Route path="/agents" element={<Suspense fallback={<PageLoadingFallback />}><AgentsPage /></Suspense>} />
