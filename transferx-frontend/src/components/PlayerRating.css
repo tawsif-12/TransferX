@@ -1,9 +1,9 @@
 .player-rating {
-  border: 1px solid #ddd;
+  border: 1px solid var(--border, #ddd);
   border-radius: 8px;
   padding: 16px;
   margin: 16px 0;
-  background: #f9f9f9;
+  background: var(--bg-surface, #f9f9f9);
 }
 
 .rating-header {
@@ -15,7 +15,7 @@
 
 .rating-header h4 {
   margin: 0;
-  color: #333;
+  color: var(--text-primary, #333);
   font-size: 15px;
 }
 
@@ -34,13 +34,13 @@
 .star {
   width: 36px;
   height: 36px;
-  border: 2px solid #ddd;
+  border: 2px solid var(--border, #ddd);
   border-radius: 4px;
-  background: white;
+  background: var(--bg-secondary, white);
   font-size: 20px;
   cursor: pointer;
   transition: all 0.2s;
-  color: #ddd;
+  color: var(--text-muted, #ddd);
 }
 
 .star:hover {
@@ -62,18 +62,20 @@
 .review-input {
   width: 100%;
   padding: 8px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border, #ddd);
   border-radius: 4px;
   font-size: 13px;
   font-family: Arial, sans-serif;
   resize: vertical;
   margin-bottom: 8px;
+  background: var(--bg-secondary, white);
+  color: var(--text-primary, #333);
 }
 
 .review-input:focus {
   outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 3px rgba(0, 123, 255, 0.25);
+  border-color: #ff9800;
+  box-shadow: 0 0 3px rgba(255, 152, 0, 0.25);
 }
 
 .message {
