@@ -36,7 +36,7 @@
   height: 36px;
   border: 2px solid var(--border, #ddd);
   border-radius: 4px;
-  background: var(--bg-secondary, white);
+  background: var(--bg-elevated, #2a3a4a);
   font-size: 20px;
   cursor: pointer;
   transition: all 0.2s;
@@ -68,7 +68,7 @@
   font-family: Arial, sans-serif;
   resize: vertical;
   margin-bottom: 8px;
-  background: var(--bg-secondary, white);
+  background: var(--bg-elevated, #2a3a4a);
   color: var(--text-primary, #333);
 }
 
