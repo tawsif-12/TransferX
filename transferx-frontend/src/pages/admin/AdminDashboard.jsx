@@ -162,18 +162,6 @@ export default function AdminDashboard() {
                                     <p className="management-desc">Manage clubs, squads & transfer budgets.</p>
                                     <button className="management-btn">Manage Clubs →</button>
                                 </div>
-                                <div className="management-card" onClick={() => navigate('/admin/leagues')}>
-                                    <div className="management-icon">🏆</div>
-                                    <h3 className="management-title">League Management</h3>
-                                    <p className="management-desc">Create leagues, assign clubs & view statistics.</p>
-                                    <button className="management-btn">Manage Leagues →</button>
-                                </div>
-                                <div className="management-card" onClick={() => navigate('/admin/agents')}>
-                                    <div className="management-icon">🤝</div>
-                                    <h3 className="management-title">Agent Management</h3>
-                                    <p className="management-desc">Manage agents & player representations.</p>
-                                    <button className="management-btn">Manage Agents →</button>
-                                </div>
                             </div>
                         </div>
 
