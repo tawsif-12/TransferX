@@ -23,6 +23,7 @@ model User {
 
   playerProfile PlayerProfile?
   agentProfile  AgentProfile?
+  playerRatings PlayerRating[]
 
   @@index([email])
   @@index([role])
@@ -109,6 +110,7 @@ model Player {
   transfer_history TransferHistory[]
   contracts      Contract[]
   agents         PlayerAgent[]
+  playerRatings  PlayerRating[]
 
   @@index([current_club_id])
   @@index([nationality])
@@ -181,4 +183,21 @@ model PlayerAgent {
 
   @@id([player_id, agent_id])
   @@index([agent_id])
+}
+
+model PlayerRating {
+  id         Int      @id @default(autoincrement())
+  user_id    Int
+  player_id  Int
+  rating     Int
+  review     String?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  user      User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  player    Player @relation(fields: [player_id], references: [player_id], onDelete: Cascade)
+
+  @@unique([user_id, player_id])
+  @@index([player_id])
+  @@index([user_id])
 }

@@ -10,12 +10,15 @@ import './Dashboard.css';
 export default function Dashboard() {
   const [stats, setStats] = useState(null);
   const [recentTransfers, setRecentTransfers] = useState([]);
+  const [topPlayers, setTopPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [topPlayersError, setTopPlayersError] = useState('');
   const toast = useToast();
 
   useEffect(() => {
     loadDashboard();
+    loadTopRatedPlayers();
   }, []);
 
   const loadDashboard = async () => {
@@ -46,6 +49,17 @@ export default function Dashboard() {
       toast.error(msg);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadTopRatedPlayers = async () => {
+    try {
+      const response = await axiosClient.get('/players/top-rated');
+      setTopPlayers(response.data || []);
+      setTopPlayersError('');
+    } catch (err) {
+      console.error('Failed to fetch top rated players:', err);
+      setTopPlayersError('Failed to load top rated players');
     }
   };
 
@@ -118,6 +132,39 @@ export default function Dashboard() {
                   <TransferCard key={transfer.transfer_id} transfer={transfer} />
                 ))}
               </div>
+            </div>
+
+            <div className="dashboard-section">
+              <h2 className="dashboard-section-title">Top Rated Players</h2>
+              {topPlayersError && (
+                <div className="error-message">{topPlayersError}</div>
+              )}
+              {topPlayers.length > 0 ? (
+                <div className="top-rated-grid">
+                  {topPlayers.map((player, index) => (
+                    <div key={player.player_id} className="player-card">
+                      <div className="player-rank">#{index + 1}</div>
+                      <div className="player-info">
+                        <h3>{player.first_name} {player.last_name}</h3>
+                        <p className="position">{player.position}</p>
+                        <p className="nationality">{player.nationality}</p>
+                      </div>
+                      <div className="player-stats">
+                        <div className="stat">
+                          <div className="stat-label">Average Rating</div>
+                          <div className="stat-value">⭐ {parseFloat(player.averageRating).toFixed(1)}</div>
+                        </div>
+                        <div className="stat">
+                          <div className="stat-label">Total Ratings</div>
+                          <div className="stat-value">{player.totalRatings}</div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="no-data">No rated players yet</div>
+              )}
             </div>
           </>
         )}

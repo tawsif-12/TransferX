@@ -42,6 +42,112 @@
   max-width: 1000px;
 }
 
+.top-rated-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.player-card {
+  background: var(--bg-secondary, white);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.player-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.player-rank {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.player-info {
+  margin-bottom: 20px;
+}
+
+.player-info h3 {
+  font-size: 1.2rem;
+  color: var(--text-primary);
+  margin: 0 0 8px 0;
+  font-weight: 600;
+}
+
+.player-info .position {
+  color: var(--green-primary, #667eea);
+  font-weight: 600;
+  margin: 5px 0;
+  font-size: 0.9rem;
+}
+
+.player-info .nationality {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin: 5px 0;
+}
+
+.player-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.stat {
+  background: rgba(0, 0, 0, 0.02);
+  padding: 10px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.stat-value {
+  font-size: 1.2rem;
+  color: var(--text-primary);
+  font-weight: bold;
+}
+
+.no-data {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 40px 20px;
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 8px;
+}
+
+.error-message {
+  background-color: #ff6b6b;
+  color: white;
+  padding: 12px 16px;
+  border-radius: 8px;
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 0.9rem;
+}
+
 @media (max-width: 768px) {
   .dashboard {
     padding: 24px 16px;
@@ -53,5 +159,13 @@
 
   .dashboard-stats {
     grid-template-columns: 1fr;
+  }
+
+  .top-rated-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .player-card {
+    padding: 15px;
   }
 }

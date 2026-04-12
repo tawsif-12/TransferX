@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import Navbar from '../../components/Navbar';
 import DataTable from '../../components/DataTable';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import PlayerRating from '../../components/PlayerRating';
 import { useToast } from '../../context/ToastContext';
 import axiosClient from '../../api/axiosClient';
 import './PlayersPage.css';
@@ -204,6 +205,12 @@ export default function PlayersPage() {
                                                         : `${(player.market_value / 1000).toFixed(0)}K`}
                                                 </span>
                                             </div>
+                                        </div>
+                                        <div className="player-rating-section">
+                                            <PlayerRating 
+                                                playerId={player.player_id} 
+                                                playerName={player.name}
+                                            />
                                         </div>
                                         <a href={`/players/${player.player_id}`} className="player-card-link">View Profile</a>
                                     </div>

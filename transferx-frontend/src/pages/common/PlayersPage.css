@@ -156,6 +156,11 @@
     flex: 1;
 }
 
+.player-rating-section {
+    padding: 0 20px 20px 20px;
+    border-top: 1px solid var(--border);
+}
+
 .detail-row {
     display: flex;
     justify-content: space-between;
