@@ -1,19 +1,13 @@
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import { getInitials } from '../utils/formatters';
+import ProfileDropdown from './ProfileDropdown';
 import './Navbar.css';
 
 export default function Navbar() {
   const location = useLocation();
-  const navigate = useNavigate();
-  const { user, role, logout } = useAuth();
+  const { role, user: authUser } = useAuth();
   const { theme, toggleTheme } = useTheme();
-
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
 
   const isActive = (path) => location.pathname === path || location.pathname.startsWith(`${path}/`);
 
@@ -66,15 +60,9 @@ export default function Navbar() {
           </button>
 
           <div className="navbar-user">
-            {user ? (
+            {authUser ? (
               <>
-                <span className="navbar-user-name">{user?.name}</span>
-                <div className="navbar-user-avatar">
-                  {user && getInitials(user.name.split(' ')[0], user.name.split(' ')[1] || '')}
-                </div>
-                <button onClick={handleLogout} className="navbar-logout">
-                  Logout
-                </button>
+                <ProfileDropdown />
               </>
             ) : (
               <Link to="/login" className="navbar-login">

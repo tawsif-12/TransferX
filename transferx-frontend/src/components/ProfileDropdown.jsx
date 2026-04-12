@@ -1,5 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
+import { getInitials } from '../utils/formatters';
 import './ProfileDropdown.css';
 
 export default function ProfileDropdown() {
@@ -8,6 +11,8 @@ export default function ProfileDropdown() {
   const [ratings, setRatings] = useState([]);
   const [loading, setLoading] = useState(false);
   const dropdownRef = useRef(null);
+  const { user: authUser, logout } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -43,10 +48,22 @@ export default function ProfileDropdown() {
     setIsOpen(!isOpen);
   };
 
+  const handleLogout = () => {
+    logout();
+    setIsOpen(false);
+    navigate('/login');
+  };
+
+  const userInitials = authUser ? getInitials(
+    authUser.name?.split(' ')[0] || 'U',
+    authUser.name?.split(' ')[1] || ''
+  ) : '?';
+
   return (
     <div ref={dropdownRef} className="profile-dropdown">
-      <button className="profile-btn" onClick={handleProfileClick}>
-        Profile
+      <button className="profile-btn" onClick={handleProfileClick} title="Open profile menu">
+        <div className="profile-avatar">{userInitials}</div>
+        <span>{authUser?.name?.split(' ')[0] || 'Profile'}</span>
       </button>
 
       {isOpen && (
@@ -62,8 +79,8 @@ export default function ProfileDropdown() {
             <>
               {user && (
                 <div className="user-info">
-                  <p><strong>Name:</strong> {user.fullName || 'N/A'}</p>
-                  <p><strong>Email:</strong> {user.email}</p>
+                  <p><strong>Name:</strong> {user.fullName || authUser?.name || 'N/A'}</p>
+                  <p><strong>Email:</strong> {user.email || authUser?.email}</p>
                 </div>
               )}
 
@@ -85,6 +102,12 @@ export default function ProfileDropdown() {
                 ) : (
                   <p className="no-ratings">No ratings yet</p>
                 )}
+              </div>
+
+              <div className="dropdown-footer">
+                <button className="logout-btn" onClick={handleLogout}>
+                  Logout
+                </button>
               </div>
             </>
           )}
