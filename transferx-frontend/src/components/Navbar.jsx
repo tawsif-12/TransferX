@@ -6,7 +6,7 @@ import './Navbar.css';
 
 export default function Navbar() {
   const location = useLocation();
-  const { role, user: authUser } = useAuth();
+  const { role, user: authUser, isAuthenticated } = useAuth();
   const { theme, toggleTheme } = useTheme();
 
   const isActive = (path) => location.pathname === path || location.pathname.startsWith(`${path}/`);
@@ -21,7 +21,7 @@ export default function Navbar() {
           </span>
         </Link>
 
-        {role !== 'ADMIN' && (
+        {isAuthenticated && role !== 'ADMIN' && (
           <div className="navbar-links">
             <Link
               to="/players"
@@ -60,10 +60,8 @@ export default function Navbar() {
           </button>
 
           <div className="navbar-user">
-            {authUser ? (
-              <>
-                <ProfileDropdown />
-              </>
+            {isAuthenticated ? (
+              <ProfileDropdown />
             ) : (
               <Link to="/login" className="navbar-login">
                 Login

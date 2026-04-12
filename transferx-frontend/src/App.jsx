@@ -66,24 +66,26 @@ export default function App() {
         <AuthProvider>
           <ToastProvider>
             <Routes>
-              {/* ── Public ─────────────────────────────────────────── */}
+              {/* Public: always accessible */}
               <Route path="/login" element={<AuthPage defaultTab="login" />} />
               <Route path="/register" element={<AuthPage defaultTab="register" />} />
               <Route path="/admin/login" element={<Suspense fallback={<PageLoadingFallback />}><AdminLogin /></Suspense>} />
-
-              {/* ── Public: all users can access ────────────────────── */}
               <Route path="/" element={<Dashboard />} />
-              <Route path="/players" element={<Suspense fallback={<PageLoadingFallback />}><PlayersPage /></Suspense>} />
-              <Route path="/players/:id" element={<Suspense fallback={<PageLoadingFallback />}><PlayerProfile /></Suspense>} />
-              <Route path="/clubs" element={<Suspense fallback={<PageLoadingFallback />}><ClubsPage /></Suspense>} />
-              <Route path="/clubs/:id" element={<Suspense fallback={<PageLoadingFallback />}><ClubDetail /></Suspense>} />
-              <Route path="/transfers" element={<Suspense fallback={<PageLoadingFallback />}><TransfersPage /></Suspense>} />
-              <Route path="/transfers/:id" element={<PagePlaceholder title="Transfer Detail" />} />
-              <Route path="/agents" element={<Suspense fallback={<PageLoadingFallback />}><AgentsPage /></Suspense>} />
-              <Route path="/agents/:id" element={<PagePlaceholder title="Agent Detail" />} />
-              <Route path="/users/:userId" element={<Suspense fallback={<PageLoadingFallback />}><UserProfile /></Suspense>} />
 
-              {/* ── Admin routes (ADMIN only) ──────────────────────────── */}
+              {/* Protected: only for authenticated users */}
+              <Route element={<ProtectedRoute />}>
+                <Route path="/players" element={<Suspense fallback={<PageLoadingFallback />}><PlayersPage /></Suspense>} />
+                <Route path="/players/:id" element={<Suspense fallback={<PageLoadingFallback />}><PlayerProfile /></Suspense>} />
+                <Route path="/clubs" element={<Suspense fallback={<PageLoadingFallback />}><ClubsPage /></Suspense>} />
+                <Route path="/clubs/:id" element={<Suspense fallback={<PageLoadingFallback />}><ClubDetail /></Suspense>} />
+                <Route path="/transfers" element={<Suspense fallback={<PageLoadingFallback />}><TransfersPage /></Suspense>} />
+                <Route path="/transfers/:id" element={<PagePlaceholder title="Transfer Detail" />} />
+                <Route path="/agents" element={<Suspense fallback={<PageLoadingFallback />}><AgentsPage /></Suspense>} />
+                <Route path="/agents/:id" element={<PagePlaceholder title="Agent Detail" />} />
+                <Route path="/users/:userId" element={<Suspense fallback={<PageLoadingFallback />}><UserProfile /></Suspense>} />
+              </Route>
+
+              {/* Admin routes (ADMIN only) */}
               <Route element={<ProtectedRoute requiredRole="ADMIN" />}>
                 <Route path="/admin" element={<Suspense fallback={<PageLoadingFallback />}><AdminDashboard /></Suspense>} />
                 <Route path="/admin/dashboard" element={<Suspense fallback={<PageLoadingFallback />}><AdminDashboard /></Suspense>} />
@@ -95,7 +97,7 @@ export default function App() {
                 <Route path="/admin/leagues" element={<PagePlaceholder title="Manage Leagues" />} />
               </Route>
 
-              {/* ── Fallbacks ───────────────────────────────────────── */}
+              {/* Fallbacks */}
               <Route path="/unauthorized" element={<Unauthorized />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
