@@ -48,14 +48,14 @@ export default function AdminPlayers() {
             if (filterPosition) params.position = filterPosition;
             if (filterClub) params.clubId = filterClub;
 
-            const response = await axiosClient.get('/admin/players', { 
+            const response = await axiosClient.get('/admin/players', {
                 params
             });
-            
+
             if (!response.data.data || !response.data.data.players) {
                 throw new Error('Invalid response structure');
             }
-            
+
             setPlayers(response.data.data.players);
             return response.data.data.players;
         } catch (err) {
@@ -101,7 +101,7 @@ export default function AdminPlayers() {
             setSubmitting(true);
             console.log('💾 Handling submit, editing:', !!editingPlayer);
             console.log('📊 Data to save:', data);
-            
+
             // Debug: Check token before sending request
             const currentToken = localStorage.getItem('transferx_token');
             const currentRole = localStorage.getItem('transferx_role');
@@ -109,9 +109,9 @@ export default function AdminPlayers() {
                 hasToken: !!currentToken,
                 tokenLength: currentToken?.length,
                 role: currentRole,
-                tokenPreview: currentToken ? `${currentToken.substring(0,20)}...` : 'NO TOKEN'
+                tokenPreview: currentToken ? `${currentToken.substring(0, 20)}...` : 'NO TOKEN'
             });
-            
+
             if (editingPlayer) {
                 console.log(`🔄 Updating player ${editingPlayer.id}...`);
                 const response = await axiosClient.put(`/admin/players/${editingPlayer.id}`, data);
@@ -154,10 +154,6 @@ export default function AdminPlayers() {
         } finally {
             setDeletingId(null);
         }
-    };
-
-    const handleViewProfile = (playerId) => {
-        navigate(`/players/${playerId}`);
     };
 
     if (loading && players.length === 0) return <LoadingSpinner fullPage />;
@@ -247,14 +243,6 @@ export default function AdminPlayers() {
                                         <td>-</td>
                                         <td>
                                             <div className="action-btns">
-                                                <button
-                                                    className="btn-view"
-                                                    onClick={() => handleViewProfile(player.id)}
-                                                    disabled={deletingId !== null}
-                                                    title="View Profile"
-                                                >
-                                                    👁️
-                                                </button>
                                                 <button
                                                     className="btn-edit"
                                                     onClick={() => handleEdit(player)}
